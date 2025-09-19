@@ -445,7 +445,24 @@ namespace SmartInventoryPro.Forms
                 Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
 
-            headerPanel.Controls.AddRange(new Control[] { lblTitle, lblDateTime });
+            // إضافة أيقونة معلومات التطبيق
+            var btnAppInfo = new Guna2Button
+            {
+                Text = "ℹ️",
+                Location = new Point(headerPanel.Width - 50, 15),
+                Size = new Size(35, 30),
+                FillColor = Color.Transparent,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI Emoji", 16, FontStyle.Regular),
+                BorderRadius = 15,
+                BorderThickness = 0,
+                Cursor = Cursors.Hand,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+
+            btnAppInfo.Click += BtnAppInfo_Click;
+
+            headerPanel.Controls.AddRange(new Control[] { lblTitle, lblDateTime, btnAppInfo });
 
             // Statistics Panel with modern spacing (responsive) - خط واحد
             var statsPanel = new Panel
@@ -1002,6 +1019,117 @@ namespace SmartInventoryPro.Forms
         {
             var updateForm = new UpdateForm();
             updateForm.ShowDialog();
+        }
+
+        private void BtnAppInfo_Click(object? sender, EventArgs e)
+        {
+            var infoForm = new Form
+            {
+                Text = "معلومات التطبيق - SmartInventory Pro",
+                Size = new Size(600, 500),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                RightToLeft = RightToLeft.Yes,
+                RightToLeftLayout = true,
+                BackColor = Color.White
+            };
+
+            var panel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(20),
+                BackColor = Color.White
+            };
+
+            var lblTitle = new Label
+            {
+                Text = "🏢 SmartInventory Pro",
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                Location = new Point(20, 20),
+                Size = new Size(540, 35),
+                ForeColor = Color.FromArgb(52, 152, 219),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            var lblVersion = new Label
+            {
+                Text = "الإصدار: v1.3 - Advanced Business Management System",
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Location = new Point(20, 70),
+                Size = new Size(540, 25),
+                ForeColor = Color.FromArgb(100, 100, 100),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            var lblFeatures = new Label
+            {
+                Text = "الميزات الرئيسية:",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Location = new Point(20, 110),
+                Size = new Size(540, 30),
+                ForeColor = Color.FromArgb(52, 152, 219)
+            };
+
+            var features = new string[]
+            {
+                "📦 إدارة المخزون المتقدمة - تتبع المنتجات والمخزون",
+                "📊 لوحة تحكم ذكية - إحصائيات شاملة ومؤشرات الأداء",
+                "🔍 بحث متقدم - البحث بالكود أو اسم المنتج",
+                "⚠️ تنبيهات المخزون - تحذيرات المنتجات قليلة المخزون",
+                "⏰ تنبيهات انتهاء الصلاحية - إدارة تواريخ انتهاء المنتجات",
+                "👥 إحصائيات الموظفين - تحليل أداء فريق المبيعات",
+                "💰 تقارير المبيعات - تحليل الإيرادات والأرباح",
+                "🔄 نظام التحديثات - تحديثات تلقائية من GitHub",
+                "🏢 متعدد القطاعات - مناسب لجميع أنواع الأعمال",
+                "🔒 أمان متقدم - حماية البيانات والمعلومات"
+            };
+
+            var yPos = 150;
+            foreach (var feature in features)
+            {
+                var lblFeature = new Label
+                {
+                    Text = feature,
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(20, yPos),
+                    Size = new Size(540, 25),
+                    ForeColor = Color.FromArgb(60, 60, 60)
+                };
+                panel.Controls.Add(lblFeature);
+                yPos += 25;
+            }
+
+            var lblCopyright = new Label
+            {
+                Text = "© 2024 SmartInventory Pro - جميع الحقوق محفوظة",
+                Font = new Font("Segoe UI", 9, FontStyle.Italic),
+                Location = new Point(20, yPos + 20),
+                Size = new Size(540, 20),
+                ForeColor = Color.FromArgb(150, 150, 150),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            var btnClose = new Guna2Button
+            {
+                Text = "إغلاق",
+                Location = new Point(250, yPos + 50),
+                Size = new Size(100, 35),
+                FillColor = Color.FromArgb(52, 152, 219),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                BorderRadius = 8
+            };
+
+            btnClose.Click += (s, e) => infoForm.Close();
+
+            panel.Controls.AddRange(new Control[] { 
+                lblTitle, lblVersion, lblFeatures, lblCopyright, btnClose 
+            });
+
+            infoForm.Controls.Add(panel);
+            infoForm.ShowDialog();
         }
 
         public class ProductSalesStats
