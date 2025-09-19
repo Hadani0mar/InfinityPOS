@@ -28,6 +28,7 @@ namespace InfinityPOS.Services
                 await GetTopSellingProductAsync(connection, stats);
                 await GetTopSellingProductGroupAsync(connection, stats);
                 await GetStockStatisticsAsync(connection, stats);
+                await GetProductsWithStockAsync(connection, stats);
                 await GetSalesStatisticsAsync(connection, stats);
                 await GetCashStatisticsAsync(connection, stats);
 
@@ -75,14 +76,11 @@ namespace InfinityPOS.Services
         private async Task GetTopSellingProductAsync(SqlConnection connection, DashboardStatistics stats)
         {
             var query = @"
-                DECLARE @today date = CAST(GETDATE() AS date);
-                DECLARE @threeMonthsAgo date = DATEADD(MONTH, -3, @today);
-
+                -- أفضل منتج مبيعاً (جميع التواريخ)
                 WITH sales_m AS (
-                    SELECT sii.ProductID_FK AS ProductID, SUM(ISNULL(sii.UnitBaseQYT, sii.QYT)) AS Qty
+                    SELECT sii.ProductID_FK AS ProductID, SUM(ISNULL(sii.QYT, 0)) AS Qty
                     FROM SALES.Data_SalesInvoiceItems sii
                     INNER JOIN SALES.Data_SalesInvoices si ON si.SalesInvoiceID_PK = sii.SalesInvoiceID_FK
-                    WHERE si.SalesInvoiceDate >= @threeMonthsAgo
                     GROUP BY sii.ProductID_FK
                 )
                 SELECT TOP 1 p.ProductID_PK AS ProductID, p.ProductName, s.Qty
@@ -103,15 +101,12 @@ namespace InfinityPOS.Services
         private async Task GetTopSellingProductGroupAsync(SqlConnection connection, DashboardStatistics stats)
         {
             var query = @"
-                DECLARE @today date = CAST(GETDATE() AS date);
-                DECLARE @threeMonthsAgo date = DATEADD(MONTH, -3, @today);
-
+                -- أفضل فئة مبيعاً (جميع التواريخ)
                 WITH sales_g AS (
-                    SELECT p.ProductGroupID_FK AS GroupID, SUM(ISNULL(sii.UnitBaseQYT, sii.QYT)) AS Qty
+                    SELECT p.ProductGroupID_FK AS GroupID, SUM(ISNULL(sii.QYT, 0)) AS Qty
                     FROM SALES.Data_SalesInvoiceItems sii
                     INNER JOIN SALES.Data_SalesInvoices si ON si.SalesInvoiceID_PK = sii.SalesInvoiceID_FK
                     INNER JOIN Inventory.Data_Products p ON p.ProductID_PK = sii.ProductID_FK
-                    WHERE si.SalesInvoiceDate >= @threeMonthsAgo
                     GROUP BY p.ProductGroupID_FK
                 )
                 SELECT TOP 1 s.GroupID, rg.ProductGroupDescription, s.Qty
@@ -132,12 +127,18 @@ namespace InfinityPOS.Services
         private async Task GetStockStatisticsAsync(SqlConnection connection, DashboardStatistics stats)
         {
             var query = @"
+                -- إحصائيات المخزون (جميع المنتجات)
                 SELECT
-                    COUNT(*) AS TotalProducts,
-                    SUM(CASE WHEN p.StockOnHand <= ISNULL(NULLIF(p.MinStockLevel,0), 10) AND p.StockOnHand > 0 THEN 1 ELSE 0 END) AS NearDepletionCount,
-                    SUM(CASE WHEN p.StockOnHand <= 0 THEN 1 ELSE 0 END) AS OutOfStockCount
-                FROM Inventory.Data_Products p
-                WHERE p.IsInActive = 0;"; // IsInActive = 0 means active
+                    (SELECT COUNT(*) FROM Inventory.Data_Products WHERE IsInActive = 0) AS TotalProducts,
+                    -- المنتجات التي لها مخزون ولكن قليل (<= 10)
+                    (SELECT COUNT(*) FROM Inventory.Data_ProductInventories pi 
+                     INNER JOIN Inventory.Data_Products p ON p.ProductID_PK = pi.ProductID_FK 
+                     WHERE p.IsInActive = 0 AND pi.StockOnHand <= 10 AND pi.StockOnHand > 0) AS NearDepletionCount,
+                    -- المنتجات التي لا تحتوي على مخزون أصلاً + المنتجات التي مخزونها صفر
+                    ((SELECT COUNT(*) FROM Inventory.Data_Products WHERE IsInActive = 0) - 
+                     (SELECT COUNT(DISTINCT pi.ProductID_FK) FROM Inventory.Data_ProductInventories pi 
+                      INNER JOIN Inventory.Data_Products p ON p.ProductID_PK = pi.ProductID_FK 
+                      WHERE p.IsInActive = 0 AND pi.StockOnHand > 0)) AS OutOfStockCount;";
 
             using var command = new SqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -150,18 +151,32 @@ namespace InfinityPOS.Services
             }
         }
 
+        private async Task GetProductsWithStockAsync(SqlConnection connection, DashboardStatistics stats)
+        {
+            var query = @"
+                -- المنتجات التي تحتوي على مخزون
+                SELECT COUNT(DISTINCT pi.ProductID_FK) AS ProductsWithStock
+                FROM Inventory.Data_ProductInventories pi
+                INNER JOIN Inventory.Data_Products p ON p.ProductID_PK = pi.ProductID_FK
+                WHERE p.IsInActive = 0 AND pi.StockOnHand > 0;";
+
+            using var command = new SqlCommand(query, connection);
+            using var reader = await command.ExecuteReaderAsync();
+            
+            if (await reader.ReadAsync())
+            {
+                stats.ProductsWithStock = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
+            }
+        }
+
         private async Task GetSalesStatisticsAsync(SqlConnection connection, DashboardStatistics stats)
         {
             var query = @"
-                -- إحصائيات آخر 3 أشهر
-                DECLARE @today date = CAST(GETDATE() AS date);
-                DECLARE @threeMonthsAgo date = DATEADD(MONTH, -3, @today);
-
+                -- إجمالي المبيعات (جميع التواريخ)
                 SELECT 
                     ISNULL(SUM(si.InvoiceNetTotal), 0) AS TotalSalesThisMonth,
                     COUNT(si.SalesInvoiceID_PK) AS TotalInvoicesThisMonth
-                FROM SALES.Data_SalesInvoices si
-                WHERE si.SalesInvoiceDate >= @threeMonthsAgo;";
+                FROM SALES.Data_SalesInvoices si;";
 
             using var command = new SqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -176,13 +191,9 @@ namespace InfinityPOS.Services
         private async Task GetCashStatisticsAsync(SqlConnection connection, DashboardStatistics stats)
         {
             var query = @"
-                -- إجمالي النقد لآخر 3 أشهر
-                DECLARE @today date = CAST(GETDATE() AS date);
-                DECLARE @threeMonthsAgo date = DATEADD(MONTH, -3, @today);
-
+                -- إجمالي النقد (جميع التواريخ)
                 SELECT SUM(ISNULL(Cash, 0)) AS TotalCash
-                FROM SALES.Data_SalesInvoices
-                WHERE SalesInvoiceDate >= @threeMonthsAgo;";
+                FROM SALES.Data_SalesInvoices;";
 
             using var command = new SqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -199,6 +210,7 @@ namespace InfinityPOS.Services
         public int TotalProducts { get; set; }
         public int LowStockCount { get; set; }
         public int OutOfStockCount { get; set; }
+        public int ProductsWithStock { get; set; }
         public int ExpiredProductsCount { get; set; }
         public int NearExpiryProductsCount { get; set; }
         public decimal TotalSalesThisMonth { get; set; }

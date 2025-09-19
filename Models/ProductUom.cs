@@ -3,14 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InfinityPOS.Models
 {
-    [Table("RefProductUOMs", Schema = "Inventory")]
+    [Table("RefUOMs", Schema = "Inventory")]
     public class ProductUom
     {
         [Key]
-        [Column("ProductUOMId")]
-        public int ProductUOMId { get; set; }
+        [Column("UOMID_PK")]
+        public short ProductUOMId { get; set; }
 
-        [Column("ProductUOMDescription")]
+        [Column("UOMName")]
         [StringLength(100)]
         public string? ProductUOMDescription { get; set; }
 

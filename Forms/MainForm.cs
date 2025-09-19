@@ -24,6 +24,7 @@ namespace InfinityPOS.Forms
         // Statistics Cards
         private Panel cardTotalProducts = null!;
         private Panel cardLowStock = null!;
+        private Panel cardProductsWithStock = null!;
         private Panel cardNearExpiry = null!;
         private Panel cardTotalSales = null!;
         private Panel cardTotalCash = null!;
@@ -126,11 +127,21 @@ namespace InfinityPOS.Forms
                 Checked = false
             };
 
+            // Filter by stock checkbox
+            var chkFilterByStock = new CheckBox
+            {
+                Text = "المنتجات التي لها مخزون فقط",
+                Location = new Point(500, 15),
+                Size = new Size(180, 20),
+                Font = new Font("Segoe UI", 9),
+                Checked = false
+            };
+
             // Search button
             var btnSearch = new Guna2Button
             {
                 Text = "بحث",
-                Location = new Point(500, 8),
+                Location = new Point(700, 8),
                 Size = new Size(80, 34),
                 FillColor = Color.FromArgb(52, 152, 219),
                 Font = new Font("Segoe UI", 9, FontStyle.Bold),
@@ -138,7 +149,7 @@ namespace InfinityPOS.Forms
                 BorderRadius = 8
             };
 
-            searchPanel.Controls.AddRange(new Control[] { txtSearch, chkShowAll, btnSearch });
+            searchPanel.Controls.AddRange(new Control[] { txtSearch, chkShowAll, chkFilterByStock, btnSearch });
 
             // Products DataGridView with modern styling (responsive)
             dgvProducts = new Guna2DataGridView
@@ -182,9 +193,10 @@ namespace InfinityPOS.Forms
             };
 
             // Add event handlers for search functionality
-            btnSearch.Click += (s, e) => SearchProducts(txtSearch.Text, chkShowAll.Checked);
-            chkShowAll.CheckedChanged += (s, e) => LoadProducts(chkShowAll.Checked);
-            txtSearch.KeyPress += (s, e) => { if (e.KeyChar == (char)13) SearchProducts(txtSearch.Text, chkShowAll.Checked); };
+            btnSearch.Click += (s, e) => SearchProducts(txtSearch.Text, chkShowAll.Checked, chkFilterByStock.Checked);
+            chkShowAll.CheckedChanged += (s, e) => LoadProducts(chkShowAll.Checked, chkFilterByStock.Checked);
+            chkFilterByStock.CheckedChanged += (s, e) => LoadProducts(chkShowAll.Checked, chkFilterByStock.Checked);
+            txtSearch.KeyPress += (s, e) => { if (e.KeyChar == (char)13) SearchProducts(txtSearch.Text, chkShowAll.Checked, chkFilterByStock.Checked); };
 
             mainPanel.Controls.AddRange(new Control[] { statsPanel, btnPanel, searchPanel, dgvProducts, lblStatus });
             this.Controls.Add(mainPanel);
@@ -206,7 +218,7 @@ namespace InfinityPOS.Forms
             }
         }
 
-        private async void LoadProducts(bool showAll = false)
+        private async void LoadProducts(bool showAll = false, bool filterByStock = false)
         {
             try
             {
@@ -217,6 +229,12 @@ namespace InfinityPOS.Forms
                     .Include(p => p.ProductGroup)
                     .Include(p => p.ProductTrademark)
                     .Where(p => !p.IsInActive); // IsInActive = false means active
+
+                // فلترة حسب المخزون
+                if (filterByStock)
+                {
+                    query = query.Where(p => p.ProductInventories.Any(pi => pi.CurrentStockLevel > 0));
+                }
 
                 if (!showAll)
                 {
@@ -252,13 +270,13 @@ namespace InfinityPOS.Forms
             }
         }
 
-        private async void SearchProducts(string searchTerm, bool showAll)
+        private async void SearchProducts(string searchTerm, bool showAll, bool filterByStock = false)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(searchTerm))
                 {
-                    LoadProducts(showAll);
+                    LoadProducts(showAll, filterByStock);
                     return;
                 }
 
@@ -270,6 +288,12 @@ namespace InfinityPOS.Forms
                            (p.ProductCode.Contains(searchTerm) || 
                             p.ProductId.ToString().Contains(searchTerm) ||
                             p.ProductDescription.Contains(searchTerm)));
+
+                // فلترة حسب المخزون
+                if (filterByStock)
+                {
+                    query = query.Where(p => p.ProductInventories.Any(pi => pi.CurrentStockLevel > 0));
+                }
 
                 var products = await query
                     .Select(p => new
@@ -420,20 +444,21 @@ namespace InfinityPOS.Forms
             // Calculate responsive spacing for cards - 7 cards in one row
             int cardWidth = 180;
             int cardSpacing = 6;
-            int totalCardsWidth = (cardWidth * 7) + (cardSpacing * 6);
+            int totalCardsWidth = (cardWidth * 8) + (cardSpacing * 7);
             int startX = Math.Max(0, (statsPanel.Width - totalCardsWidth) / 2);
 
-            // All Statistics in one row (responsive spacing)
+            // All Statistics in one row (responsive spacing) - 8 cards
             cardTotalProducts = CreateStatCard("📦", "إجمالي المنتجات", "0", Color.FromArgb(52, 152, 219), startX, 0);
-            cardLowStock = CreateStatCard("⚠️", "منتجات قليلة المخزون", "0", Color.FromArgb(230, 126, 34), startX + (cardWidth + cardSpacing), 0);
-            cardNearExpiry = CreateStatCard("⏰", "قريبة الانتهاء", "0", Color.FromArgb(231, 76, 60), startX + (cardWidth + cardSpacing) * 2, 0);
-            cardTotalSales = CreateStatCardWithToggle("💰", "مبيعات (3 أشهر)", "0 د.ل", Color.FromArgb(39, 174, 96), startX + (cardWidth + cardSpacing) * 3, 0);
-            cardTotalCash = CreateStatCard("💵", "نقد (3 أشهر)", "0 د.ل", Color.FromArgb(46, 204, 113), startX + (cardWidth + cardSpacing) * 4, 0);
-            cardTopProduct = CreateStatCard("🏆", "أفضل منتج", "غير محدد", Color.FromArgb(155, 89, 182), startX + (cardWidth + cardSpacing) * 5, 0);
-            cardTopGroup = CreateStatCard("📊", "أفضل فئة", "غير محدد", Color.FromArgb(26, 188, 156), startX + (cardWidth + cardSpacing) * 6, 0);
+            cardLowStock = CreateStatCard("⚠️", "منتجات منتهية المخزون", "0", Color.FromArgb(230, 126, 34), startX + (cardWidth + cardSpacing), 0);
+            cardProductsWithStock = CreateStatCard("📋", "منتجات تحتوي مخزون", "0", Color.FromArgb(52, 73, 94), startX + (cardWidth + cardSpacing) * 2, 0);
+            cardNearExpiry = CreateStatCard("⏰", "قريبة الانتهاء", "0", Color.FromArgb(231, 76, 60), startX + (cardWidth + cardSpacing) * 3, 0);
+            cardTotalSales = CreateStatCardWithToggle("💰", "إجمالي المبيعات", "0 د.ل", Color.FromArgb(39, 174, 96), startX + (cardWidth + cardSpacing) * 4, 0);
+            cardTotalCash = CreateStatCardWithToggle("💵", "إجمالي النقد", "0 د.ل", Color.FromArgb(46, 204, 113), startX + (cardWidth + cardSpacing) * 5, 0, false);
+            cardTopProduct = CreateStatCard("🏆", "أفضل منتج", "غير محدد", Color.FromArgb(155, 89, 182), startX + (cardWidth + cardSpacing) * 6, 0);
+            cardTopGroup = CreateStatCard("📊", "أفضل فئة", "غير محدد", Color.FromArgb(26, 188, 156), startX + (cardWidth + cardSpacing) * 7, 0);
 
             statsPanel.Controls.AddRange(new Control[] { 
-                cardTotalProducts, cardLowStock, cardNearExpiry, cardTotalSales, cardTotalCash,
+                cardTotalProducts, cardLowStock, cardProductsWithStock, cardNearExpiry, cardTotalSales, cardTotalCash,
                 cardTopProduct, cardTopGroup
             });
 
@@ -522,8 +547,10 @@ namespace InfinityPOS.Forms
 
         private bool _salesAmountVisible = true;
         private string _actualSalesAmount = "";
+        private bool _cashAmountVisible = true;
+        private string _actualCashAmount = "";
 
-        private Panel CreateStatCardWithToggle(string icon, string title, string value, Color color, int x, int y)
+        private Panel CreateStatCardWithToggle(string icon, string title, string value, Color color, int x, int y, bool isSalesCard = true)
         {
             var card = new Panel
             {
@@ -611,16 +638,33 @@ namespace InfinityPOS.Forms
 
             btnToggle.Click += (s, e) =>
             {
-                _salesAmountVisible = !_salesAmountVisible;
-                if (_salesAmountVisible)
+                if (isSalesCard)
                 {
-                    btnToggle.Text = "👁️";
-                    lblValue.Text = _actualSalesAmount;
+                    _salesAmountVisible = !_salesAmountVisible;
+                    if (_salesAmountVisible)
+                    {
+                        btnToggle.Text = "👁️";
+                        lblValue.Text = _actualSalesAmount;
+                    }
+                    else
+                    {
+                        btnToggle.Text = "🙈";
+                        lblValue.Text = "*** د.ل";
+                    }
                 }
                 else
                 {
-                    btnToggle.Text = "🙈";
-                    lblValue.Text = "***";
+                    _cashAmountVisible = !_cashAmountVisible;
+                    if (_cashAmountVisible)
+                    {
+                        btnToggle.Text = "👁️";
+                        lblValue.Text = _actualCashAmount;
+                    }
+                    else
+                    {
+                        btnToggle.Text = "🙈";
+                        lblValue.Text = "*** د.ل";
+                    }
                 }
             };
 
@@ -666,7 +710,8 @@ namespace InfinityPOS.Forms
                 var stats = await _statisticsService.GetDashboardStatisticsAsync();
                 
                 UpdateStatCard(cardTotalProducts, stats.TotalProducts.ToString());
-                UpdateStatCard(cardLowStock, stats.LowStockCount.ToString());
+                UpdateStatCard(cardLowStock, stats.OutOfStockCount.ToString());
+                UpdateStatCard(cardProductsWithStock, stats.ProductsWithStock.ToString());
                 UpdateStatCard(cardNearExpiry, stats.NearExpiryProductsCount.ToString());
                 
                 // Update sales card with new currency and store actual amount
@@ -674,8 +719,10 @@ namespace InfinityPOS.Forms
                 _actualSalesAmount = salesAmount;
                 UpdateStatCard(cardTotalSales, salesAmount);
                 
-                // Update cash card
-                UpdateStatCard(cardTotalCash, $"{stats.TotalCashThisMonth:N0} د.ل");
+                // Update cash card and store actual amount
+                var cashAmount = $"{stats.TotalCashThisMonth:N0} د.ل";
+                _actualCashAmount = cashAmount;
+                UpdateStatCard(cardTotalCash, cashAmount);
                 
                 UpdateStatCard(cardTopProduct, stats.TopSellingProduct);
                 UpdateStatCard(cardTopGroup, stats.TopSellingProductGroup);
@@ -715,7 +762,7 @@ namespace InfinityPOS.Forms
             try
             {
                 var selectedRow = dgvProducts.SelectedRows[0];
-                var productId = Convert.ToInt64(selectedRow.Cells["المعرف"].Value);
+                var productId = Convert.ToInt32(selectedRow.Cells["المعرف"].Value);
 
                 // Get detailed product information
                 var product = await _dbContext.Products

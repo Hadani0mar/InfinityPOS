@@ -30,7 +30,7 @@ namespace InfinityPOS.Models
         public DateTime? CreatedDate { get; set; }
 
         [Column("CreatedByUserID")]
-        public int? CreatedByUserId { get; set; }
+        public short? CreatedByUserId { get; set; }
 
         [Column("SalePersonID_FK")]
         public int? SalePersonId { get; set; }

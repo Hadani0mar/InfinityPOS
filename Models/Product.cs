@@ -25,7 +25,7 @@ namespace InfinityPOS.Models
         public int? ProductTrademarkId { get; set; }
 
         [Column("DefaultSellUomID_FK")]
-        public int? ProductUOMId { get; set; }
+        public short? ProductUOMId { get; set; }
 
         [Column("IsInActive")]
         public bool IsInActive { get; set; } = false;
