@@ -1048,8 +1048,14 @@ namespace SmartInventoryPro.Forms
                 
                 if (updateInfo.HasUpdates)
                 {
+                    var updateMessage = $"🔄 توجد تحديثات جديدة متاحة!\n\n" +
+                                      $"📝 محتوى التحديث:\n{updateInfo.LastMessage}\n\n" +
+                                      $"🕒 تاريخ النشر: {updateInfo.LastDate}\n" +
+                                      $"🔗 معرف التحديث: {updateInfo.LastHash?.Substring(0, 8)}...\n\n" +
+                                      $"هل تريد تحميل التحديث الآن؟";
+                    
                     var result = MessageBox.Show(
-                        $"يوجد تحديث جديد متاح!\n\nالإصدار الحالي: {updateInfo.LocalCommit}\nالإصدار الجديد: {updateInfo.RemoteCommit}\n\n{updateInfo.LastMessage}\n\nهل تريد التحديث الآن؟",
+                        updateMessage,
                         "تحديث متاح - SmartInventory Pro",
                         MessageBoxButtons.YesNo,
                         MessageBoxIcon.Information,

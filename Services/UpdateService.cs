@@ -13,8 +13,8 @@ namespace SmartInventoryPro.Services
     {
         private readonly HttpClient _httpClient;
         private const string API_BASE_URL = "http://102.213.180.199:8080/infinitypos-api/";
-        private const string GITHUB_REPO = "https://api.github.com/repos/yourusername/SmartInventoryPro";
-        private const string DOWNLOAD_URL = "https://github.com/yourusername/SmartInventoryPro/releases/latest/download/";
+        private const string GITHUB_REPO = "https://api.github.com/repos/Hadani0mar/InfinityPOS";
+        private const string DOWNLOAD_URL = "https://github.com/Hadani0mar/InfinityPOS/releases/latest/download/";
 
         public UpdateService()
         {

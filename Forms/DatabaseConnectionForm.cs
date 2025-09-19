@@ -2,17 +2,30 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
+using System.IO;
+using System.Text.Json;
 
 namespace SmartInventoryPro.Forms
 {
+    public class DatabaseSettings
+    {
+        public string Server { get; set; } = "localhost\\SQLEXPRESS";
+        public string Database { get; set; } = "pharmacy1";
+        public string Username { get; set; } = "sa";
+        public string Password { get; set; } = "123";
+        public bool RememberSettings { get; set; } = true;
+    }
+
     public partial class DatabaseConnectionForm : Form
     {
         public string? ConnectionString { get; private set; }
+        private readonly string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SmartInventoryPro", "database_settings.json");
 
         private TextBox txtServer = null!;
         private TextBox txtDatabase = null!;
         private TextBox txtUsername = null!;
         private TextBox txtPassword = null!;
+        private CheckBox chkRememberSettings = null!;
         private Button btnTest = null!;
         private Button btnConnect = null!;
         private Button btnCancel = null!;
@@ -20,6 +33,7 @@ namespace SmartInventoryPro.Forms
         public DatabaseConnectionForm()
         {
             InitializeComponent();
+            LoadSettings();
         }
 
         private void InitializeComponent()
@@ -90,11 +104,20 @@ namespace SmartInventoryPro.Forms
                 UseSystemPasswordChar = true
             };
 
+            // Remember Settings CheckBox
+            chkRememberSettings = new CheckBox
+            {
+                Text = "💾 حفظ إعدادات الاتصال",
+                Location = new Point(150, 190),
+                Size = new Size(200, 25),
+                Checked = true
+            };
+
             // Buttons
             btnTest = new Button
             {
                 Text = "اختبار الاتصال",
-                Location = new Point(300, 200),
+                Location = new Point(300, 230),
                 Size = new Size(100, 30)
             };
             btnTest.Click += BtnTest_Click;
@@ -102,7 +125,7 @@ namespace SmartInventoryPro.Forms
             btnConnect = new Button
             {
                 Text = "اتصال",
-                Location = new Point(190, 200),
+                Location = new Point(190, 230),
                 Size = new Size(100, 30)
             };
             btnConnect.Click += BtnConnect_Click;
@@ -110,7 +133,7 @@ namespace SmartInventoryPro.Forms
             btnCancel = new Button
             {
                 Text = "إلغاء",
-                Location = new Point(80, 200),
+                Location = new Point(80, 230),
                 Size = new Size(100, 30)
             };
             btnCancel.Click += BtnCancel_Click;
@@ -121,6 +144,7 @@ namespace SmartInventoryPro.Forms
                 lblDatabase, txtDatabase,
                 lblUsername, txtUsername,
                 lblPassword, txtPassword,
+                chkRememberSettings,
                 btnTest, btnConnect, btnCancel
             });
         }
@@ -147,6 +171,10 @@ namespace SmartInventoryPro.Forms
                 ConnectionString = BuildConnectionString();
                 using var connection = new SqlConnection(ConnectionString);
                 connection.Open();
+                
+                // حفظ الإعدادات إذا كان المستخدم يريد ذلك
+                SaveSettings();
+                
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
@@ -164,7 +192,68 @@ namespace SmartInventoryPro.Forms
 
         private string BuildConnectionString()
         {
-            return $"Server={txtServer.Text};Database={txtDatabase.Text};User Id={txtUsername.Text};Password={txtPassword.Text};TrustServerCertificate=true;MultipleActiveResultSets=true";
+            return $"Server={txtServer.Text};Database={txtDatabase.Text};User Id={txtUsername.Text};Password={txtPassword.Text};TrustServerCertificate=true;MultipleActiveResultSets=true;Encrypt=false;ConnectRetryCount=3;ConnectRetryInterval=10";
+        }
+
+        private void LoadSettings()
+        {
+            try
+            {
+                if (File.Exists(_settingsPath))
+                {
+                    var json = File.ReadAllText(_settingsPath);
+                    var settings = JsonSerializer.Deserialize<DatabaseSettings>(json);
+                    
+                    if (settings != null)
+                    {
+                        txtServer.Text = settings.Server;
+                        txtDatabase.Text = settings.Database;
+                        txtUsername.Text = settings.Username;
+                        txtPassword.Text = settings.Password;
+                        chkRememberSettings.Checked = settings.RememberSettings;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // في حالة الخطأ، استخدم القيم الافتراضية
+                System.Diagnostics.Debug.WriteLine($"خطأ في تحميل الإعدادات: {ex.Message}");
+            }
+        }
+
+        private void SaveSettings()
+        {
+            try
+            {
+                if (chkRememberSettings.Checked)
+                {
+                    var settings = new DatabaseSettings
+                    {
+                        Server = txtServer.Text,
+                        Database = txtDatabase.Text,
+                        Username = txtUsername.Text,
+                        Password = txtPassword.Text,
+                        RememberSettings = chkRememberSettings.Checked
+                    };
+
+                    var directory = Path.GetDirectoryName(_settingsPath);
+                    if (!Directory.Exists(directory))
+                        Directory.CreateDirectory(directory);
+
+                    var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(_settingsPath, json);
+                }
+                else
+                {
+                    // حذف الملف إذا لم يعد المستخدم يريد حفظ الإعدادات
+                    if (File.Exists(_settingsPath))
+                        File.Delete(_settingsPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"خطأ في حفظ الإعدادات: {ex.Message}");
+            }
         }
     }
 }

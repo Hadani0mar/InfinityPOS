@@ -158,9 +158,11 @@ namespace SmartInventoryPro.Forms
                     lblStatus.Text = "✅ توجد تحديثات جديدة متاحة!";
                     lblStatus.ForeColor = Color.FromArgb(46, 204, 113);
                     
-                    lblUpdateInfo.Text = $"📝 آخر تحديث: {updateInfo.LastMessage}\n" +
-                                       $"🕒 تاريخ التحديث: {updateInfo.LastDate}\n" +
-                                       $"🔗 معرف التحديث: {updateInfo.LastHash?.Substring(0, 8)}...";
+                    lblUpdateInfo.Text = $"📝 محتوى التحديث:\n{updateInfo.LastMessage}\n\n" +
+                                       $"🕒 تاريخ النشر: {updateInfo.LastDate}\n" +
+                                       $"🔗 معرف التحديث: {updateInfo.LastHash?.Substring(0, 8)}...\n" +
+                                       $"📊 الإصدار الحالي: {updateInfo.LocalCommit}\n" +
+                                       $"🚀 الإصدار الجديد: {updateInfo.RemoteCommit}";
                     
                     pnlUpdateInfo.Visible = true;
                     btnApplyUpdate.Enabled = true;
