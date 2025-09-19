@@ -449,18 +449,30 @@ namespace SmartInventoryPro.Forms
             var btnAppInfo = new Guna2Button
             {
                 Text = "ℹ️",
-                Location = new Point(headerPanel.Width - 50, 15),
-                Size = new Size(35, 30),
-                FillColor = Color.Transparent,
+                Location = new Point(headerPanel.Width - 80, 10),
+                Size = new Size(50, 40),
+                FillColor = Color.FromArgb(40, 40, 40),
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI Emoji", 16, FontStyle.Regular),
-                BorderRadius = 15,
-                BorderThickness = 0,
+                Font = new Font("Segoe UI Emoji", 18, FontStyle.Bold),
+                BorderRadius = 25,
+                BorderThickness = 2,
+                BorderColor = Color.White,
                 Cursor = Cursors.Hand,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                ShadowDecoration = { Enabled = true, ShadowColor = Color.Black, ShadowDepth = 3 }
             };
 
             btnAppInfo.Click += BtnAppInfo_Click;
+
+            // إضافة تأثيرات hover للأيقونة
+            btnAppInfo.MouseEnter += (s, e) => {
+                btnAppInfo.FillColor = Color.FromArgb(60, 60, 60);
+                btnAppInfo.BorderColor = Color.FromArgb(52, 152, 219);
+            };
+            btnAppInfo.MouseLeave += (s, e) => {
+                btnAppInfo.FillColor = Color.FromArgb(40, 40, 40);
+                btnAppInfo.BorderColor = Color.White;
+            };
 
             headerPanel.Controls.AddRange(new Control[] { lblTitle, lblDateTime, btnAppInfo });
 
