@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using InfinityPOS.Data;
 using InfinityPOS.Models;
 using InfinityPOS.Services;
+using InfinityPOS.Forms.Reports;
 using Guna.UI2.WinForms;
 
 namespace InfinityPOS.Forms
@@ -92,7 +93,7 @@ namespace InfinityPOS.Forms
             btnExpiry = CreateModernButton("⏰ تنبيهات انتهاء الصلاحية", Color.FromArgb(231, 76, 60), 440, 15);
             btnExpiry.Click += BtnExpiry_Click;
 
-            btnPerformance = CreateModernButton("📊 تحليل أداء الموظفين", Color.FromArgb(155, 89, 182), 650, 15);
+            btnPerformance = CreateModernButton("👥 إحصائيات الموظفين", Color.FromArgb(155, 89, 182), 650, 15);
             btnPerformance.Click += BtnPerformance_Click;
 
             btnPanel.Controls.AddRange(new Control[] { btnRequiredItems, btnLowStock, btnExpiry, btnPerformance });
@@ -249,12 +250,17 @@ namespace InfinityPOS.Forms
                         اسم_المنتج = p.ProductDescription,
                         المجموعة = p.ProductGroup != null ? p.ProductGroup.ProductGroupDescription : "غير محدد",
                         العلامة_التجارية = p.ProductTrademark != null ? p.ProductTrademark.ProductTrademarkDescription : "غير محدد",
-                        الحالة = "نشط"
+                        الحالة = p.ProductInventories.Any(pi => pi.CurrentStockLevel > 0) 
+                            ? p.ProductInventories.Where(pi => pi.CurrentStockLevel > 0).First().CurrentStockLevel.ToString() 
+                            : "منتهي المخزون"
                     })
                     .ToListAsync();
 
                 dgvProducts.DataSource = products;
                 dgvProducts.RightToLeft = RightToLeft.Yes;
+
+                // Add cell formatting for stock status
+                dgvProducts.CellFormatting += DgvProducts_CellFormatting;
 
                 // Add context menu for product details
                 AddProductContextMenu();
@@ -301,12 +307,17 @@ namespace InfinityPOS.Forms
                         المعرف = p.ProductId,
                         الكود = p.ProductCode,
                         اسم_المنتج = p.ProductDescription,
-                        الحالة = "نشط"
+                        الحالة = p.ProductInventories.Any(pi => pi.CurrentStockLevel > 0) 
+                            ? p.ProductInventories.Where(pi => pi.CurrentStockLevel > 0).First().CurrentStockLevel.ToString() 
+                            : "منتهي المخزون"
                     })
                     .ToListAsync();
 
                 dgvProducts.DataSource = products;
                 dgvProducts.RightToLeft = RightToLeft.Yes;
+
+                // Add cell formatting for stock status
+                dgvProducts.CellFormatting += DgvProducts_CellFormatting;
 
                 lblStatus.Text = $"🔍 تم العثور على {products.Count} منتج مطابق للبحث";
                 lblStatus.ForeColor = Color.FromArgb(39, 174, 96);
@@ -381,7 +392,8 @@ namespace InfinityPOS.Forms
 
         private void BtnPerformance_Click(object? sender, EventArgs e)
         {
-            var reportForm = new EmployeePerformanceForm(_dbContext);
+            var connectionString = _dbContext.Database.GetConnectionString() ?? "";
+            var reportForm = new EmployeeStatisticsForm(connectionString);
             reportForm.ShowDialog();
         }
 
@@ -545,9 +557,9 @@ namespace InfinityPOS.Forms
             return card;
         }
 
-        private bool _salesAmountVisible = true;
+        private bool _salesAmountVisible = false; // مخفي افتراضياً
         private string _actualSalesAmount = "";
-        private bool _cashAmountVisible = true;
+        private bool _cashAmountVisible = false; // مخفي افتراضياً
         private string _actualCashAmount = "";
 
         private Panel CreateStatCardWithToggle(string icon, string title, string value, Color color, int x, int y, bool isSalesCard = true)
@@ -669,7 +681,26 @@ namespace InfinityPOS.Forms
             };
 
             // Store actual amount for toggling
-            _actualSalesAmount = value;
+            if (isSalesCard)
+            {
+                _actualSalesAmount = value;
+                // تطبيق الحالة المخفية افتراضياً
+                if (!_salesAmountVisible)
+                {
+                    btnToggle.Text = "🙈";
+                    lblValue.Text = "*** د.ل";
+                }
+            }
+            else
+            {
+                _actualCashAmount = value;
+                // تطبيق الحالة المخفية افتراضياً
+                if (!_cashAmountVisible)
+                {
+                    btnToggle.Text = "🙈";
+                    lblValue.Text = "*** د.ل";
+                }
+            }
 
             card.Controls.AddRange(new Control[] { lblIcon, lblTitle, lblValue, btnToggle });
             return card;
@@ -717,12 +748,12 @@ namespace InfinityPOS.Forms
                 // Update sales card with new currency and store actual amount
                 var salesAmount = $"{stats.TotalSalesThisMonth:N0} د.ل";
                 _actualSalesAmount = salesAmount;
-                UpdateStatCard(cardTotalSales, salesAmount);
+                UpdateStatCard(cardTotalSales, _salesAmountVisible ? salesAmount : "*** د.ل");
                 
                 // Update cash card and store actual amount
                 var cashAmount = $"{stats.TotalCashThisMonth:N0} د.ل";
                 _actualCashAmount = cashAmount;
-                UpdateStatCard(cardTotalCash, cashAmount);
+                UpdateStatCard(cardTotalCash, _cashAmountVisible ? cashAmount : "*** د.ل");
                 
                 UpdateStatCard(cardTopProduct, stats.TopSellingProduct);
                 UpdateStatCard(cardTopGroup, stats.TopSellingProductGroup);
@@ -743,6 +774,24 @@ namespace InfinityPOS.Forms
             var valueLabel = card.Controls.OfType<Label>().FirstOrDefault(l => l.Tag?.ToString() == "value");
             if (valueLabel != null)
                 valueLabel.Text = value;
+        }
+
+        private void DgvProducts_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (dgvProducts.Columns[e.ColumnIndex].Name == "الحالة" && e.Value != null)
+            {
+                string status = e.Value.ToString() ?? "";
+                if (status == "منتهي المخزون")
+                {
+                    e.CellStyle.ForeColor = Color.Red;
+                    e.CellStyle.Font = new Font(dgvProducts.Font, FontStyle.Bold);
+                }
+                else
+                {
+                    e.CellStyle.ForeColor = Color.Green;
+                    e.CellStyle.Font = new Font(dgvProducts.Font, FontStyle.Bold);
+                }
+            }
         }
 
         private void AddProductContextMenu()
