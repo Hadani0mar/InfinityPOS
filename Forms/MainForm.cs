@@ -40,6 +40,9 @@ namespace SmartInventoryPro.Forms
             InitializeComponent();
             LoadStatistics();
             LoadProducts();
+            
+            // فحص التحديثات التلقائي عند بدء التطبيق
+            CheckForUpdatesOnStartup();
         }
 
         private void InitializeComponent()
@@ -459,7 +462,7 @@ namespace SmartInventoryPro.Forms
                 BorderColor = Color.White,
                 Cursor = Cursors.Hand,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                ShadowDecoration = { Enabled = true, ShadowColor = Color.Black, ShadowDepth = 3 }
+                ShadowDecoration = { Enabled = true }
             };
 
             btnAppInfo.Click += BtnAppInfo_Click;
@@ -1031,6 +1034,85 @@ namespace SmartInventoryPro.Forms
         {
             var updateForm = new UpdateForm();
             updateForm.ShowDialog();
+        }
+
+        private async void CheckForUpdatesOnStartup()
+        {
+            try
+            {
+                // انتظار 3 ثوانٍ بعد بدء التطبيق
+                await Task.Delay(3000);
+                
+                var updateService = new UpdateService();
+                var updateInfo = await updateService.CheckForUpdatesAsync();
+                
+                if (updateInfo.HasUpdates)
+                {
+                    var result = MessageBox.Show(
+                        $"يوجد تحديث جديد متاح!\n\nالإصدار الحالي: {updateInfo.LocalCommit}\nالإصدار الجديد: {updateInfo.RemoteCommit}\n\n{updateInfo.LastMessage}\n\nهل تريد التحديث الآن؟",
+                        "تحديث متاح - SmartInventory Pro",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Information,
+                        MessageBoxDefaultButton.Button1,
+                        MessageBoxOptions.RtlReading
+                    );
+                    
+                    if (result == DialogResult.Yes)
+                    {
+                        await ApplyUpdateAsync(updateService);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // لا نعرض خطأ للمستخدم عند بدء التطبيق
+                System.Diagnostics.Debug.WriteLine($"خطأ في فحص التحديثات: {ex.Message}");
+            }
+        }
+
+        private async Task ApplyUpdateAsync(UpdateService updateService)
+        {
+            try
+            {
+                var updateResult = await updateService.ApplyUpdateAsync();
+                
+                if (updateResult.Success)
+                {
+                    MessageBox.Show(
+                        "تم بدء عملية التحديث بنجاح!\nسيتم إعادة تشغيل التطبيق تلقائياً.",
+                        "تحديث ناجح",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information,
+                        MessageBoxDefaultButton.Button1,
+                        MessageBoxOptions.RtlReading
+                    );
+                    
+                    // إغلاق التطبيق ليتم إعادة تشغيله بواسطة سكريبت التحديث
+                    Application.Exit();
+                }
+                else
+                {
+                    MessageBox.Show(
+                        $"فشل في التحديث: {updateResult.Error}",
+                        "خطأ في التحديث",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error,
+                        MessageBoxDefaultButton.Button1,
+                        MessageBoxOptions.RtlReading
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"خطأ في تطبيق التحديث: {ex.Message}",
+                    "خطأ في التحديث",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error,
+                    MessageBoxDefaultButton.Button1,
+                    MessageBoxOptions.RtlReading
+                );
+            }
         }
 
         private void BtnAppInfo_Click(object? sender, EventArgs e)

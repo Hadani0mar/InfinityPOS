@@ -1,0 +1,81 @@
+name: Auto Update System
+
+on:
+  push:
+    branches: [ master ]
+  release:
+    types: [ published ]
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    
+    - name: Publish
+      run: dotnet publish --configuration Release --output ./publish --no-build
+    
+    - name: Create Release Package
+      run: |
+        # إنشاء ملف ZIP للتحديث
+        Compress-Archive -Path "./publish/*" -DestinationPath "./SmartInventoryPro_Update.zip" -Force
+        
+        # إنشاء ملف معلومات التحديث
+        $version = (Get-Content "./InfinityPOS/InfinityPOS.csproj" | Select-String "Version" | ForEach-Object { $_.Line -replace '.*Version>([^<]+)<.*', '$1' })
+        $updateInfo = @{
+          version = $version
+          date = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+          message = "تحديث تلقائي من GitHub Actions"
+          download_url = "https://github.com/${{ github.repository }}/releases/latest/download/SmartInventoryPro_Update.zip"
+        } | ConvertTo-Json
+        
+        $updateInfo | Out-File -FilePath "./update_info.json" -Encoding UTF8
+    
+    - name: Upload Release Assets
+      uses: actions/upload-artifact@v3
+      with:
+        name: SmartInventoryPro_Update
+        path: |
+          SmartInventoryPro_Update.zip
+          update_info.json
+    
+    - name: Create Release
+      if: github.event_name == 'push'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.run_number }}
+        name: SmartInventory Pro v${{ github.run_number }}
+        body: |
+          ## تحديث تلقائي
+          
+          - **الإصدار**: v${{ github.run_number }}
+          - **التاريخ**: ${{ github.event.head_commit.timestamp }}
+          - **الرسالة**: ${{ github.event.head_commit.message }}
+          
+          ### الميزات الجديدة:
+          - تحسينات في الأداء
+          - إصلاح الأخطاء
+          - ميزات جديدة
+          
+          ### كيفية التحديث:
+          1. اضغط على زر "🔄 التحديثات" في التطبيق
+          2. أو انتظر التحديث التلقائي عند بدء التطبيق
+        files: |
+          SmartInventoryPro_Update.zip
+          update_info.json
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
