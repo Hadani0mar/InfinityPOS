@@ -1,0 +1,1047 @@
+{
+  "title": "InfinityPOS Unified DB Schema for LLM Querying",
+  "version": "1.0",
+  "generated_at": "now",
+  "dialect": "mssql",
+  "schemas": {
+    "BRD": {
+      "tables": {
+        "Data_SalesInvoices": {
+          "pk": [
+            "SalesInvoiceID_PK"
+          ],
+          "columns": {
+            "SalesInvoiceID_PK": {
+              "type": "int",
+              "nullable": false
+            },
+            "BranchID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Ref_Branches.BranchID_PK"
+              }
+            },
+            "WsID_FK": {
+              "type": "tinyint",
+              "nullable": false
+            },
+            "POSTerminalShiftID_FK": {
+              "type": "int",
+              "nullable": true,
+              "fk": {
+                "ref": "POS.Ref_POSTerminalShifts.POSTerminalShiftID_PK"
+              }
+            },
+            "SalesInvoiceDate": {
+              "type": "datetime",
+              "nullable": false
+            },
+            "CustomerID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "CRM.Data_Customers.CustomerID_PK"
+              }
+            },
+            "CashCustomerName": {
+              "type": "nvarchar(75)",
+              "nullable": true
+            },
+            "SalePersonID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "HR.Ref_Employees.EmployeeID_PK"
+              }
+            },
+            "DocumentTypeID_FK": {
+              "type": "tinyint",
+              "nullable": false,
+              "fk": {
+                "ref": "Ref_DocumentTypes.DocumentTypeID_PK"
+              }
+            },
+            "SalesInvoiceStateID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Ref_SalesInvoiceStates.SalesInvoiceStateID_PK"
+              }
+            },
+            "InvoiceNumber": {
+              "type": "nvarchar(20)",
+              "nullable": false,
+              "unique": true
+            },
+            "InvoiceSubTotal": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "InvoiceDiscountTotal": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "InvoiceNetTotal": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "Notes": {
+              "type": "nvarchar(500)",
+              "nullable": true
+            },
+            "PaymentCount": {
+              "type": "tinyint",
+              "nullable": false
+            },
+            "PaymentCaption": {
+              "type": "nvarchar(150)",
+              "nullable": false
+            },
+            "Cash": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "Change": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "TransactionBarcode": {
+              "type": "nvarchar(15)",
+              "nullable": false
+            },
+            "CreatedByUserID": {
+              "type": "smallint",
+              "nullable": false
+            },
+            "CreatedByUserName": {
+              "type": "nvarchar(50)",
+              "nullable": false
+            },
+            "Createddate": {
+              "type": "datetime",
+              "nullable": false
+            },
+            "modifiedByUserID": {
+              "type": "smallint",
+              "nullable": true
+            },
+            "modifiedByUserName": {
+              "type": "nvarchar(50)",
+              "nullable": true
+            },
+            "modifiedDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "OrderNumber": {
+              "type": "int",
+              "nullable": false
+            },
+            "OrderType": {
+              "type": "nvarchar(10)",
+              "nullable": true
+            },
+            "CustomerPriceTypeID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "CRM.Ref_CustomerPriceTypes.CustomerPriceTypeID_PK"
+              }
+            },
+            "CustomerDiscountDefaultValue": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "CustomerDiscountUsedAsPersentage": {
+              "type": "bit",
+              "nullable": false
+            },
+            "LocationID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Ref_Locations.LocationID_PK"
+              }
+            },
+            "IsSynced": {
+              "type": "bit",
+              "nullable": false
+            },
+            "SourceInvoiceID_FK": {
+              "type": "int",
+              "nullable": true,
+              "fk": {
+                "ref": "BRD.Data_SalesInvoices.SalesInvoiceID_PK"
+              }
+            },
+            "DeliveryNotePrintCount": {
+              "type": "int",
+              "nullable": false
+            }
+          },
+          "indexes": [
+            [
+              "BranchID_FK",
+              "SalesInvoiceDate"
+            ],
+            [
+              "InvoiceNumber"
+            ]
+          ]
+        },
+        "Data_SalesInvoiceItems": {
+          "pk": [
+            "SalesInvoiceItemID_PK"
+          ],
+          "columns": {
+            "SalesInvoiceItemID_PK": {
+              "type": "bigint",
+              "nullable": false
+            },
+            "SalesInvoiceID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "BRD.Data_SalesInvoices.SalesInvoiceID_PK"
+              }
+            },
+            "ProductID_FK": {
+              "type": "bigint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Data_Products.ProductID_PK"
+              }
+            },
+            "QYT": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "UnitID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_UOMs.UomID_PK"
+              }
+            },
+            "UnitBaseQYT": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "UnitCost": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "UnitPrice": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "SubTotal": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "DiscountPersentage": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "DiscountAmount": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "ExpireDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "ItemNote": {
+              "type": "nvarchar(250)",
+              "nullable": true
+            },
+            "IsQYTDelivered": {
+              "type": "bit",
+              "nullable": false
+            },
+            "CreatedByUserID": {
+              "type": "smallint",
+              "nullable": false
+            },
+            "CreatedByUserName": {
+              "type": "nvarchar(250)",
+              "nullable": false
+            },
+            "Createddate": {
+              "type": "datetime",
+              "nullable": false
+            },
+            "modifiedByUserID": {
+              "type": "smallint",
+              "nullable": true
+            },
+            "modifiedByUserName": {
+              "type": "nvarchar(50)",
+              "nullable": true
+            },
+            "modifiedDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "TotalSalesPoints": {
+              "type": "int",
+              "nullable": false
+            },
+            "SerialNo": {
+              "type": "nvarchar(max)",
+              "nullable": true
+            },
+            "PackageUnitID_FK": {
+              "type": "smallint",
+              "nullable": true,
+              "fk": {
+                "ref": "Inventory.Ref_UOMs.UomID_PK"
+              }
+            },
+            "PackageUnitBaseQYT": {
+              "type": "decimal",
+              "nullable": true
+            }
+          },
+          "indexes": [
+            [
+              "SalesInvoiceID_FK"
+            ],
+            [
+              "ProductID_FK"
+            ]
+          ]
+        },
+        "Data_SalesInvoicePayments": {
+          "pk": [
+            "SalesInvoicePaymentID_PK"
+          ],
+          "columns": {
+            "SalesInvoicePaymentID_PK": {
+              "type": "int",
+              "nullable": false
+            },
+            "SalesInvoiceID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "BRD.Data_SalesInvoices.SalesInvoiceID_PK"
+              }
+            },
+            "PaymentMethodID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.RefPaymentMethods.PaymentMethodID_PK"
+              }
+            },
+            "CurrencyXchangeRate": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "PaymentAmount": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "LocCurrencyPaymentAmount": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "PaymentNote": {
+              "type": "nvarchar(500)",
+              "nullable": true
+            },
+            "CreatedByUserID": {
+              "type": "smallint",
+              "nullable": false
+            },
+            "CreatedByUserName": {
+              "type": "nvarchar(50)",
+              "nullable": false
+            },
+            "Createddate": {
+              "type": "datetime",
+              "nullable": false
+            },
+            "modifiedByUserID": {
+              "type": "smallint",
+              "nullable": true
+            },
+            "modifiedByUserName": {
+              "type": "nvarchar(50)",
+              "nullable": true
+            },
+            "modifiedDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "EPaymentTerminalID_FK": {
+              "type": "int",
+              "nullable": true
+            },
+            "EPaymentTransactionReference": {
+              "type": "nvarchar(20)",
+              "nullable": true
+            },
+            "EPaymentVoucherAmount": {
+              "type": "decimal",
+              "nullable": true
+            },
+            "EPaymentVoucherLocCurrencyAmount": {
+              "type": "decimal",
+              "nullable": true
+            },
+            "EPaymentVoucherNote": {
+              "type": "nvarchar(25)",
+              "nullable": true
+            },
+            "EPaymentUpdatedByUserID": {
+              "type": "smallint",
+              "nullable": true
+            },
+            "EPaymentUpdatedByUserName": {
+              "type": "nvarchar(50)",
+              "nullable": true
+            },
+            "EpaymentUpdateddate": {
+              "type": "datetime",
+              "nullable": true
+            }
+          },
+          "indexes": [
+            [
+              "SalesInvoiceID_FK"
+            ]
+          ]
+        }
+      }
+    },
+    "Inventory": {
+      "tables": {
+        "Data_Products": {
+          "pk": [
+            "ProductID_PK"
+          ],
+          "columns": {
+            "ProductID_PK": {
+              "type": "bigint",
+              "nullable": false
+            },
+            "ProductCode": {
+              "type": "nvarchar(30)",
+              "nullable": false
+            },
+            "ProductName": {
+              "type": "nvarchar(75)",
+              "nullable": false
+            },
+            "ProductShortName": {
+              "type": "nvarchar(75)",
+              "nullable": false
+            },
+            "SalesDecription": {
+              "type": "nvarchar(300)",
+              "nullable": false
+            },
+            "PurchaseDescription": {
+              "type": "nvarchar(300)",
+              "nullable": false
+            },
+            "ProductTypeID_FK": {
+              "type": "tinyint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_ProductTypes.ProductTypeID_PK"
+              }
+            },
+            "InvSubDepartmentID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_SubDepartments.InvSubDepartmentID_PK"
+              }
+            },
+            "ProductGroupID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_ProductGroups.ProductGroupID_PK"
+              }
+            },
+            "ProductTrademarkID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_TradeMarks.ProductTrademarkID_PK"
+              }
+            },
+            "DefaultSellUomID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_UOMs.UomID_PK"
+              }
+            },
+            "DefaultOrderUomID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_UOMs.UomID_PK"
+              }
+            },
+            "DefaultInventoryUomID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_UOMs.UomID_PK"
+              }
+            },
+            "MinStockLevel": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "MaxStockLevel": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "IsInActive": {
+              "type": "bit",
+              "nullable": false
+            },
+            "IsDiscontinuousItem": {
+              "type": "bit",
+              "nullable": false
+            },
+            "IsNonDiscountableItem": {
+              "type": "bit",
+              "nullable": false
+            },
+            "IsHasOpenPrice": {
+              "type": "bit",
+              "nullable": false
+            },
+            "StockOnHand": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "StockOnHold": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "TotalReceivedQYT": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "TotalSoldQYT": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "LastSalesTransactionDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "LastReceiveTransactionDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "LastOrderTransactionDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "LastStockAdjTransactionDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "LastRefundTransactionDate": {
+              "type": "datetime",
+              "nullable": true
+            },
+            "ConfirmSoldProductUOM": {
+              "type": "bit",
+              "nullable": false
+            },
+            "MainSupplierID_FK": {
+              "type": "int",
+              "nullable": true,
+              "fk": {
+                "ref": "Purchasing.Ref_Suppliers.SupplierID_PK"
+              }
+            },
+            "SalesPoints": {
+              "type": "int",
+              "nullable": false
+            },
+            "IsHasSerialNO": {
+              "type": "bit",
+              "nullable": false
+            }
+          },
+          "indexes": [
+            [
+              "ProductCode"
+            ],
+            [
+              "ProductGroupID_FK"
+            ],
+            [
+              "ProductTrademarkID_FK"
+            ]
+          ]
+        },
+        "Data_ProductUOMs": {
+          "pk": [
+            "ProductUomID_PK"
+          ],
+          "columns": {
+            "ProductUomID_PK": {
+              "type": "bigint",
+              "nullable": false
+            },
+            "ProductID_FK": {
+              "type": "bigint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Data_Products.ProductID_PK"
+              }
+            },
+            "UomID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_UOMs.UomID_PK"
+              }
+            },
+            "BaseUnitQYT": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "UOMLastPrice": {
+              "type": "decimal",
+              "nullable": true
+            }
+          },
+          "indexes": [
+            [
+              "ProductID_FK"
+            ],
+            [
+              "UomID_FK"
+            ]
+          ]
+        },
+        "Data_ProductExpiryDates": {
+          "pk": [
+            "ExpiryDateID_PK"
+          ],
+          "columns": {
+            "ExpiryDateID_PK": {
+              "type": "bigint",
+              "nullable": false
+            },
+            "BranchID_FK": {
+              "type": "int",
+              "nullable": true
+            },
+            "ProductID_FK": {
+              "type": "bigint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Data_Products.ProductID_PK"
+              }
+            },
+            "QYT": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "ExpiryDate": {
+              "type": "datetime",
+              "nullable": false
+            }
+          },
+          "indexes": [
+            [
+              "ProductID_FK",
+              "ExpiryDate"
+            ]
+          ]
+        },
+        "Data_ProductInventories": {
+          "pk": [
+            "ProductInventoryID_PK"
+          ],
+          "columns": {
+            "ProductInventoryID_PK": {
+              "type": "int",
+              "nullable": false
+            },
+            "BranchID_FK": {
+              "type": "int",
+              "nullable": false
+            },
+            "LocationID_FK": {
+              "type": "int",
+              "nullable": false
+            },
+            "ProductID_FK": {
+              "type": "bigint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Data_Products.ProductID_PK"
+              }
+            },
+            "StockOnHand": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "StockOnHold": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "ExpiryDate": {
+              "type": "datetime",
+              "nullable": true
+            }
+          },
+          "indexes": [
+            [
+              "BranchID_FK",
+              "LocationID_FK",
+              "ProductID_FK"
+            ]
+          ]
+        },
+        "Data_InventoryTransactions": {
+          "pk": [
+            "TransactionID_PK"
+          ],
+          "columns": {
+            "TransactionID_PK": {
+              "type": "bigint",
+              "nullable": false
+            },
+            "TransactionCode": {
+              "type": "nvarchar(3)",
+              "nullable": false,
+              "enum": [
+                "IN",
+                "OUT",
+                "ADJ"
+              ]
+            },
+            "TransactionDate": {
+              "type": "datetime",
+              "nullable": false
+            },
+            "TransSourceID_FK": {
+              "type": "tinyint",
+              "nullable": false
+            },
+            "TransSourceReference": {
+              "type": "int",
+              "nullable": false
+            },
+            "ProductID_FK": {
+              "type": "int",
+              "nullable": false
+            },
+            "TransactionQYT": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "UnitID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Inventory.Ref_UOMs.UomID_PK"
+              }
+            },
+            "UnitCost": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "BranchID_FK": {
+              "type": "int",
+              "nullable": false
+            },
+            "LocationID_FK": {
+              "type": "int",
+              "nullable": false
+            }
+          },
+          "indexes": [
+            [
+              "ProductID_FK",
+              "TransactionDate"
+            ],
+            [
+              "TransSourceID_FK",
+              "TransSourceReference"
+            ]
+          ]
+        }
+      }
+    },
+    "Financial": {
+      "tables": {
+        "Data_Accounts": {
+          "pk": [
+            "AccountID_PK"
+          ],
+          "columns": {
+            "AccountID_PK": {
+              "type": "int",
+              "nullable": false
+            },
+            "AccountSubGroupID_FK": {
+              "type": "smallint",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.RefAccountSubGroups.AccountSubGroupID_PK"
+              }
+            },
+            "AccountNumber": {
+              "type": "bigint",
+              "nullable": false
+            },
+            "AccountName": {
+              "type": "nvarchar(100)",
+              "nullable": false
+            },
+            "AccountOpenBalance": {
+              "type": "decimal",
+              "nullable": false
+            }
+          },
+          "indexes": [
+            [
+              "AccountNumber"
+            ],
+            [
+              "AccountSubGroupID_FK"
+            ]
+          ]
+        },
+        "Data_JournalEntries": {
+          "pk": [
+            "JournalEntryID_PK"
+          ],
+          "columns": {
+            "JournalEntryID_PK": {
+              "type": "int",
+              "nullable": false
+            },
+            "BranchID_FK": {
+              "type": "int",
+              "nullable": false
+            },
+            "JournalEntryTypeID_FK": {
+              "type": "tinyint",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.RefJournalEntryTypes.JEntryType_ID_PK"
+              }
+            },
+            "JournalEntryNumber": {
+              "type": "nvarchar(15)",
+              "nullable": false
+            },
+            "JournalEntryDate": {
+              "type": "datetime",
+              "nullable": false
+            },
+            "IsPosted": {
+              "type": "bit",
+              "nullable": false
+            }
+          },
+          "indexes": [
+            [
+              "JournalEntryNumber"
+            ],
+            [
+              "JournalEntryDate"
+            ]
+          ]
+        },
+        "Data_JournalEntryDetails": {
+          "pk": [
+            "JournalEntryDetailID_PK"
+          ],
+          "columns": {
+            "JournalEntryDetailID_PK": {
+              "type": "int",
+              "nullable": false
+            },
+            "JournalEntryID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.Data_JournalEntries.JournalEntryID_PK"
+              }
+            },
+            "AccountID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.Data_Accounts.AccountID_PK"
+              }
+            },
+            "CreditAmount": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "DebitAmount": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "CostCenterID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.RefCostCenters.CostCenterID_PK"
+              }
+            }
+          },
+          "indexes": [
+            [
+              "JournalEntryID_FK"
+            ],
+            [
+              "AccountID_FK"
+            ]
+          ]
+        },
+        "Data_PaymentVouchers": {
+          "pk": [
+            "PaymentVoucherID_PK"
+          ],
+          "columns": {
+            "PaymentVoucherID_PK": {
+              "type": "int",
+              "nullable": false
+            },
+            "BranchID_FK": {
+              "type": "int",
+              "nullable": false
+            },
+            "DocumentTypeID_FK": {
+              "type": "tinyint",
+              "nullable": false
+            },
+            "PaymentMethodTypeID_FK": {
+              "type": "smallint",
+              "nullable": false
+            },
+            "VoucherDate": {
+              "type": "datetime",
+              "nullable": false
+            },
+            "VoucherNumber": {
+              "type": "nvarchar(10)",
+              "nullable": false
+            },
+            "VoucherAmount": {
+              "type": "decimal",
+              "nullable": false
+            },
+            "DebitAccountID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.Data_Accounts.AccountID_PK"
+              }
+            },
+            "CreditAccountID_FK": {
+              "type": "int",
+              "nullable": false,
+              "fk": {
+                "ref": "Financial.Data_Accounts.AccountID_PK"
+              }
+            },
+            "IsPosted": {
+              "type": "bit",
+              "nullable": false
+            }
+          },
+          "indexes": [
+            [
+              "VoucherNumber"
+            ],
+            [
+              "BranchID_FK",
+              "VoucherDate"
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "relationships": [
+    {
+      "from": "BRD.Data_SalesInvoiceItems.SalesInvoiceID_FK",
+      "to": "BRD.Data_SalesInvoices.SalesInvoiceID_PK",
+      "cardinality": "many-to-one"
+    },
+    {
+      "from": "BRD.Data_SalesInvoicePayments.SalesInvoiceID_FK",
+      "to": "BRD.Data_SalesInvoices.SalesInvoiceID_PK",
+      "cardinality": "many-to-one"
+    },
+    {
+      "from": "Inventory.Data_ProductUOMs.ProductID_FK",
+      "to": "Inventory.Data_Products.ProductID_PK",
+      "cardinality": "many-to-one"
+    },
+    {
+      "from": "Inventory.Data_ProductInventories.ProductID_FK",
+      "to": "Inventory.Data_Products.ProductID_PK",
+      "cardinality": "many-to-one"
+    },
+    {
+      "from": "Inventory.Data_ProductExpiryDates.ProductID_FK",
+      "to": "Inventory.Data_Products.ProductID_PK",
+      "cardinality": "many-to-one"
+    },
+    {
+      "from": "Financial.Data_JournalEntryDetails.JournalEntryID_FK",
+      "to": "Financial.Data_JournalEntries.JournalEntryID_PK",
+      "cardinality": "many-to-one"
+    },
+    {
+      "from": "Financial.Data_JournalEntryDetails.AccountID_FK",
+      "to": "Financial.Data_Accounts.AccountID_PK",
+      "cardinality": "many-to-one"
+    },
+    {
+      "from": "BRD.Data_SalesInvoiceItems.ProductID_FK",
+      "to": "Inventory.Data_Products.ProductID_PK",
+      "cardinality": "many-to-one"
+    }
+  ],
+  "semantic_hints": {
+    "queries": {
+      "top_selling_products": {
+        "description": "Products by sold quantity or revenue in a date range",
+        "sql_template": "SELECT TOP(@top) p.ProductID_PK, p.ProductName, SUM(i.QYT) as TotalQty, SUM(i.SubTotal - i.DiscountAmount) as Revenue FROM BRD.Data_SalesInvoiceItems i JOIN BRD.Data_SalesInvoices s ON s.SalesInvoiceID_PK=i.SalesInvoiceID_FK JOIN Inventory.Data_Products p ON p.ProductID_PK=i.ProductID_FK WHERE s.SalesInvoiceDate BETWEEN @start AND @end GROUP BY p.ProductID_PK,p.ProductName ORDER BY Revenue DESC"
+      },
+      "expired_items": {
+        "description": "Batches expired by cutoff date",
+        "sql_template": "SELECT e.ProductID_FK, p.ProductName, e.ExpiryDate, e.QYT FROM Inventory.Data_ProductExpiryDates e JOIN Inventory.Data_Products p ON p.ProductID_PK=e.ProductID_FK WHERE e.ExpiryDate < @cutoff"
+      },
+      "product_movements": {
+        "description": "Inventory movements for a product",
+        "sql_template": "SELECT t.TransactionDate, t.TransactionCode, t.TransactionQYT, t.UnitCost, t.BranchID_FK, t.LocationID_FK FROM Inventory.Data_InventoryTransactions t WHERE t.ProductID_FK=@product_id AND t.TransactionDate BETWEEN @start AND @end ORDER BY t.TransactionDate"
+      },
+      "sales_by_employee": {
+        "description": "Sales grouped by salesperson",
+        "sql_template": "SELECT s.SalePersonID_FK, SUM(s.InvoiceNetTotal) AS NetTotal, COUNT(*) AS InvoiceCount FROM BRD.Data_SalesInvoices s WHERE s.SalesInvoiceDate BETWEEN @start AND @end GROUP BY s.SalePersonID_FK ORDER BY NetTotal DESC"
+      }
+    }
+  },
+  "notes": [
+    "FK targets marked with 'ref' are inferred from column names. Adjust if your actual reference tables differ.",
+    "Decimal scales are not specified in INFORMATION_SCHEMA snippet. Set precision/scale to your actual values.",
+    "Add missing reference schemas like CRM, POS, Ref_* as needed."
+  ]
+}
