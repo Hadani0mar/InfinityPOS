@@ -44,7 +44,7 @@ namespace InfinityPOS.Forms
 
         private void InitializeComponent()
         {
-            this.Text = "نظام إدارة الصيدلية الذكي - InfinityPOS v1.1";
+            this.Text = "نظام إدارة الصيدلية الذكي - InfinityPOS v1.2";
             this.WindowState = FormWindowState.Maximized;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.RightToLeft = RightToLeft.Yes;
