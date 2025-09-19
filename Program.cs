@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using SmartInventoryPro.Data;
 using SmartInventoryPro.Forms;
+using System.Text;
 
 namespace SmartInventoryPro
 {
@@ -12,6 +13,13 @@ namespace SmartInventoryPro
         [STAThread]
         static void Main()
         {
+            // Register encoding providers for SQL Server compatibility
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            
+            // Set up global exception handling
+            Application.ThreadException += Application_ThreadException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            
             ApplicationConfiguration.Initialize();
 
             try
@@ -34,10 +42,26 @@ namespace SmartInventoryPro
                     Application.Run(mainForm);
                 }
             }
+            catch (TypeInitializationException ex)
+            {
+                MessageBox.Show($"خطأ في تهيئة النظام: {ex.InnerException?.Message ?? ex.Message}\n\nتأكد من توفر SQL Server أو قاعدة البيانات", 
+                    "خطأ في التهيئة", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             catch (Exception ex)
             {
                 MessageBox.Show($"خطأ في بدء التطبيق: {ex.Message}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            MessageBox.Show($"خطأ في التطبيق: {e.Exception.Message}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var ex = (Exception)e.ExceptionObject;
+            MessageBox.Show($"خطأ غير متوقع: {ex.Message}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private static void ConfigureServices(IServiceCollection services, string connectionString)
