@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using InfinityPOS.Data;
-using InfinityPOS.Models;
+using SmartInventoryPro.Data;
+using SmartInventoryPro.Models;
 
-namespace InfinityPOS.Services
+namespace SmartInventoryPro.Services
 {
     public class InventoryAnalysisService
     {

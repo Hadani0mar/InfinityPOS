@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace InfinityPOS.Models
+namespace SmartInventoryPro.Models
 {
     [Table("RefProductGroups", Schema = "Inventory")]
     public class ProductGroup

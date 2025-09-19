@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace InfinityPOS.Services
+namespace SmartInventoryPro.Services
 {
     public class UpdateService
     {

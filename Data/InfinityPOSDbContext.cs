@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using InfinityPOS.Models;
+using SmartInventoryPro.Models;
 
-namespace InfinityPOS.Data
+namespace SmartInventoryPro.Data
 {
     public class InfinityPOSDbContext : DbContext
     {

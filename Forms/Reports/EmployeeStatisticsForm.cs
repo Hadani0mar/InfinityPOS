@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
 using Guna.UI2.WinForms;
 
-namespace InfinityPOS.Forms.Reports
+namespace SmartInventoryPro.Forms.Reports
 {
     public partial class EmployeeStatisticsForm : Form
     {

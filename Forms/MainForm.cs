@@ -3,13 +3,13 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.EntityFrameworkCore;
-using InfinityPOS.Data;
-using InfinityPOS.Models;
-using InfinityPOS.Services;
-using InfinityPOS.Forms.Reports;
+using SmartInventoryPro.Data;
+using SmartInventoryPro.Models;
+using SmartInventoryPro.Services;
+using SmartInventoryPro.Forms.Reports;
 using Guna.UI2.WinForms;
 
-namespace InfinityPOS.Forms
+namespace SmartInventoryPro.Forms
 {
     public partial class MainForm : Form
     {
@@ -44,7 +44,7 @@ namespace InfinityPOS.Forms
 
         private void InitializeComponent()
         {
-            this.Text = "نظام إدارة الصيدلية الذكي - InfinityPOS v1.3";
+            this.Text = "SmartInventory Pro - Advanced Business Management System v1.3";
             this.WindowState = FormWindowState.Maximized;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.RightToLeft = RightToLeft.Yes;
@@ -424,7 +424,7 @@ namespace InfinityPOS.Forms
 
             var lblTitle = new Label
             {
-                Text = "🏥 نظام إدارة الصيدلية الذكي - لوحة التحكم",
+                Text = "🏢 SmartInventory Pro - Business Dashboard",
                 Font = new Font("Segoe UI", Math.Max(12, Math.Min(18, headerPanel.Width / 80)), FontStyle.Bold), // خط متكيف
                 Location = new Point(20, 15),
                 Size = new Size(headerPanel.Width - 400, 30),

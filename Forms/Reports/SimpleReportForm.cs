@@ -1,10 +1,10 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using InfinityPOS.Data;
+using SmartInventoryPro.Data;
 using Guna.UI2.WinForms;
 
-namespace InfinityPOS.Forms
+namespace SmartInventoryPro.Forms.Reports
 {
     public partial class SimpleReportForm : Form
     {

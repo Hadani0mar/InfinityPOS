@@ -2,10 +2,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using InfinityPOS.Data;
-using InfinityPOS.Forms;
+using SmartInventoryPro.Data;
+using SmartInventoryPro.Forms;
 
-namespace InfinityPOS
+namespace SmartInventoryPro
 {
     internal static class Program
     {
@@ -29,7 +29,7 @@ namespace InfinityPOS
 
                     // Create and run main form
                     var dbContext = serviceProvider.GetRequiredService<InfinityPOSDbContext>();
-                    var statisticsService = serviceProvider.GetRequiredService<InfinityPOS.Services.StatisticsService>();
+                    var statisticsService = serviceProvider.GetRequiredService<SmartInventoryPro.Services.StatisticsService>();
                     var mainForm = new MainForm(dbContext, statisticsService);
                     Application.Run(mainForm);
                 }
@@ -61,8 +61,8 @@ namespace InfinityPOS
                 options.UseSqlServer(connectionString));
 
             // Add Services
-            services.AddScoped<InfinityPOS.Services.InventoryAnalysisService>();
-            services.AddScoped<InfinityPOS.Services.StatisticsService>();
+            services.AddScoped<SmartInventoryPro.Services.InventoryAnalysisService>();
+            services.AddScoped<SmartInventoryPro.Services.StatisticsService>();
         }
     }
 }

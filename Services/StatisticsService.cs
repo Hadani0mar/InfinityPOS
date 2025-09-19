@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
-namespace InfinityPOS.Services
+namespace SmartInventoryPro.Services
 {
     public class StatisticsService
     {

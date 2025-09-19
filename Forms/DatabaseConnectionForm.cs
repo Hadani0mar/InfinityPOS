@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
 
-namespace InfinityPOS.Forms
+namespace SmartInventoryPro.Forms
 {
     public partial class DatabaseConnectionForm : Form
     {

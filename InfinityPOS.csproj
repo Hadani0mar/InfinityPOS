@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>InfinityPOS</RootNamespace>
-    <AssemblyName>InfinityPOS</AssemblyName>
+    <RootNamespace>SmartInventoryPro</RootNamespace>
+    <AssemblyName>SmartInventoryPro</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
