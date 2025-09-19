@@ -11,10 +11,10 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
     
@@ -24,8 +24,8 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     
-    - name: Publish
-      run: dotnet publish --configuration Release --output ./publish --no-build
+    - name: Publish Single File
+      run: dotnet publish --configuration Release --output ./publish --no-build -r win-x64 --self-contained true /p:PublishSingleFile=true
     
     - name: Create Release Package
       run: |
@@ -33,18 +33,20 @@ jobs:
         Compress-Archive -Path "./publish/*" -DestinationPath "./SmartInventoryPro_Update.zip" -Force
         
         # إنشاء ملف معلومات التحديث
-        $version = (Get-Content "./InfinityPOS/InfinityPOS.csproj" | Select-String "Version" | ForEach-Object { $_.Line -replace '.*Version>([^<]+)<.*', '$1' })
+        $version = (Get-Content "./InfinityPOS.csproj" | Select-String "Version" | ForEach-Object { $_.Line -replace '.*Version>([^<]+)<.*', '$1' })
+        $commitMessage = "${{ github.event.head_commit.message }}"
         $updateInfo = @{
           version = $version
           date = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-          message = "تحديث تلقائي من GitHub Actions"
+          message = $commitMessage
+          commit_hash = "${{ github.sha }}"
           download_url = "https://github.com/${{ github.repository }}/releases/latest/download/SmartInventoryPro_Update.zip"
         } | ConvertTo-Json
         
         $updateInfo | Out-File -FilePath "./update_info.json" -Encoding UTF8
     
     - name: Upload Release Assets
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: SmartInventoryPro_Update
         path: |
@@ -53,7 +55,7 @@ jobs:
     
     - name: Create Release
       if: github.event_name == 'push'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: v${{ github.run_number }}
         name: SmartInventory Pro v${{ github.run_number }}
