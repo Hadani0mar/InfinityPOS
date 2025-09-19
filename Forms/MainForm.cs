@@ -21,6 +21,7 @@ namespace InfinityPOS.Forms
         private Guna2Button btnLowStock = null!;
         private Guna2Button btnExpiry = null!;
         private Guna2Button btnPerformance = null!;
+        private Guna2Button btnUpdates = null!;
         
         // Statistics Cards
         private Panel cardTotalProducts = null!;
@@ -94,9 +95,11 @@ namespace InfinityPOS.Forms
             btnExpiry.Click += BtnExpiry_Click;
 
             btnPerformance = CreateModernButton("👥 إحصائيات الموظفين", Color.FromArgb(155, 89, 182), 650, 15);
+            btnUpdates = CreateModernButton("🔄 التحديثات", Color.FromArgb(52, 152, 219), 800, 15);
             btnPerformance.Click += BtnPerformance_Click;
+            btnUpdates.Click += BtnUpdates_Click;
 
-            btnPanel.Controls.AddRange(new Control[] { btnRequiredItems, btnLowStock, btnExpiry, btnPerformance });
+            btnPanel.Controls.AddRange(new Control[] { btnRequiredItems, btnLowStock, btnExpiry, btnPerformance, btnUpdates });
 
             // Search and controls panel
             var searchPanel = new Panel
@@ -993,6 +996,12 @@ namespace InfinityPOS.Forms
 
             form.Controls.Add(panel);
             return form;
+        }
+
+        private void BtnUpdates_Click(object sender, EventArgs e)
+        {
+            var updateForm = new UpdateForm();
+            updateForm.ShowDialog();
         }
 
         public class ProductSalesStats
