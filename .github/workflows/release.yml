@@ -19,11 +19,13 @@ jobs:
         dotnet-version: '8.0.x'
         
     - name: Restore dependencies
-      run: dotnet restore InfinityPOS/InfinityPOS.csproj
+      run: dotnet restore InfinityPOS.csproj
+      working-directory: ./InfinityPOS
       
     - name: Build and publish
       run: |
-        dotnet publish InfinityPOS/InfinityPOS.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+        dotnet publish InfinityPOS.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ../publish
+      working-directory: ./InfinityPOS
         
     - name: Create release package
       run: |
@@ -37,7 +39,7 @@ jobs:
         
         # Create README
         @"
-        SmartInventory Pro v2.0.0
+        SmartInventory Pro v2.0.1
         ==========================
         
         Installation Instructions:
@@ -46,11 +48,11 @@ jobs:
         3. Select 'Run as administrator'
         4. Follow the installation wizard
         
-        What's New in v2.0.0:
-        - Completely rebuilt installer system
-        - Improved update mechanism
-        - Enhanced stability and performance
-        - Fixed all previous installation issues
+        What's New in v2.0.1:
+        - Fixed GitHub Actions build path issues
+        - Improved update window size and scrolling
+        - Enhanced UI responsiveness
+        - Fixed update notification display
         
         System Requirements:
         - Windows 10/11 (64-bit)
@@ -61,7 +63,7 @@ jobs:
         "@ | Out-File -FilePath "./release/README.txt" -Encoding UTF8
         
         # Create ZIP package
-        Compress-Archive -Path "./release/*" -DestinationPath "./SmartInventoryPro_v2.0.0_Release.zip"
+        Compress-Archive -Path "./release/*" -DestinationPath "./SmartInventoryPro_v2.0.1_Release.zip"
         
     - name: Get version from tag
       id: get_version
@@ -69,7 +71,7 @@ jobs:
         if ($env:GITHUB_REF -match '^refs/tags/(.*)') {
           $version = $matches[1]
         } else {
-          $version = "v2.0.0"
+          $version = "v2.0.1"
         }
         echo "VERSION=$version" >> $env:GITHUB_OUTPUT
         
@@ -81,16 +83,16 @@ jobs:
         tag_name: ${{ steps.get_version.outputs.VERSION }}
         release_name: SmartInventory Pro ${{ steps.get_version.outputs.VERSION }}
         body: |
-          🚀 **SmartInventory Pro v2.0.0 - Major Release**
+          🚀 **SmartInventory Pro v2.0.1 - Bug Fix Release**
           
-          ## 🎯 What's New
-          - **Completely rebuilt installer** - No more installation errors!
-          - **Smart update system** - Updates work seamlessly
-          - **Enhanced stability** - All previous bugs fixed
-          - **Better user experience** - Simplified installation process
+          ## 🎯 What's Fixed
+          - **GitHub Actions Build** - Fixed project path issues
+          - **Update Window Size** - Smaller, scrollable update notifications
+          - **UI Responsiveness** - Better text handling and display
+          - **Close Button** - Update window now closes properly
           
           ## 📦 Installation
-          1. Download `SmartInventoryPro_v2.0.0_Release.zip`
+          1. Download `SmartInventoryPro_v2.0.1_Release.zip`
           2. Extract all files to a folder
           3. Right-click `SmartInventoryPro_Simple_Installer.bat`
           4. Select **"Run as administrator"**
@@ -125,6 +127,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./SmartInventoryPro_v2.0.0_Release.zip
-        asset_name: SmartInventoryPro_v2.0.0_Release.zip
+        asset_path: ./SmartInventoryPro_v2.0.1_Release.zip
+        asset_name: SmartInventoryPro_v2.0.1_Release.zip
         asset_content_type: application/zip
+

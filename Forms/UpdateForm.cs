@@ -26,11 +26,12 @@ namespace SmartInventoryPro.Forms
         private void InitializeComponent()
         {
             this.Text = "نظام التحديثات - InfinityPOS";
-            this.Size = new Size(500, 400);
+            this.Size = new Size(450, 350);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.TopMost = true;
 
             // Header Panel
             var headerPanel = new Panel
@@ -69,19 +70,21 @@ namespace SmartInventoryPro.Forms
                 Height = 40
             };
 
-            // Update Info Panel
+            // Update Info Panel with scrollable text
             pnlUpdateInfo = new Panel
             {
                 Dock = DockStyle.Fill,
                 Visible = false,
-                Padding = new Padding(10)
+                Padding = new Padding(10),
+                AutoScroll = true
             };
 
             lblUpdateInfo = new Label
             {
-                Font = new Font("Segoe UI", 9),
+                Font = new Font("Segoe UI", 8),
                 ForeColor = Color.FromArgb(52, 73, 94),
-                Dock = DockStyle.Fill,
+                AutoSize = true,
+                MaximumSize = new Size(380, 180),
                 TextAlign = ContentAlignment.TopLeft
             };
 
@@ -164,11 +167,14 @@ namespace SmartInventoryPro.Forms
                         hashDisplay = updateInfo.LastHash.Substring(0, 8);
                     }
                     
-                    lblUpdateInfo.Text = $"📝 محتوى التحديث:\n{updateInfo.LastMessage}\n\n" +
+                    // تقصير النص وإضافة النقاط في حالة الطول الزائد
+                    var message = updateInfo.LastMessage.Length > 100 ? 
+                        updateInfo.LastMessage.Substring(0, 100) + "..." : 
+                        updateInfo.LastMessage;
+                        
+                    lblUpdateInfo.Text = $"📝 محتوى التحديث:\n{message}\n\n" +
                                        $"🕒 تاريخ النشر: {updateInfo.LastDate}\n" +
-                                       $"🔗 معرف التحديث: {hashDisplay}...\n" +
-                                       $"📊 الإصدار الحالي: {updateInfo.LocalCommit}\n" +
-                                       $"🚀 الإصدار الجديد: {updateInfo.RemoteCommit}";
+                                       $"🔗 معرف التحديث: {hashDisplay}...";
                     
                     pnlUpdateInfo.Visible = true;
                     btnApplyUpdate.Enabled = true;
@@ -215,7 +221,12 @@ namespace SmartInventoryPro.Forms
                         newCommitDisplay = result.NewCommit.Substring(0, 8);
                     }
                     
-                    lblUpdateInfo.Text = $"📝 التحديث الجديد: {result.NewMessage}\n" +
+                    // تقصير النص 
+                    var newMessage = result.NewMessage.Length > 100 ? 
+                        result.NewMessage.Substring(0, 100) + "..." : 
+                        result.NewMessage;
+                        
+                    lblUpdateInfo.Text = $"📝 التحديث الجديد: {newMessage}\n" +
                                        $"🕒 تاريخ التحديث: {result.NewDate}\n" +
                                        $"🔗 معرف التحديث: {newCommitDisplay}...";
                     
