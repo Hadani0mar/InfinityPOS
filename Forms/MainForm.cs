@@ -501,8 +501,8 @@ namespace SmartInventoryPro.Forms
             cardNearExpiry = CreateStatCard("⏰", "قريبة الانتهاء", "0", Color.FromArgb(231, 76, 60), startX + (cardWidth + cardSpacing) * 3, 0);
             cardTotalSales = CreateStatCardWithToggle("💰", "إجمالي المبيعات", "0 د.ل", Color.FromArgb(39, 174, 96), startX + (cardWidth + cardSpacing) * 4, 0);
             cardTotalCash = CreateStatCardWithToggle("💵", "إجمالي النقد", "0 د.ل", Color.FromArgb(46, 204, 113), startX + (cardWidth + cardSpacing) * 5, 0, false);
-            cardTopProduct = CreateStatCard("🏆", "أفضل منتج", "غير محدد", Color.FromArgb(155, 89, 182), startX + (cardWidth + cardSpacing) * 6, 0);
-            cardTopGroup = CreateStatCard("📊", "أفضل فئة", "غير محدد", Color.FromArgb(26, 188, 156), startX + (cardWidth + cardSpacing) * 7, 0);
+            cardTopProduct = CreateStatCard("🔥🏆", "أفضل منتج", "غير محدد", Color.FromArgb(155, 89, 182), startX + (cardWidth + cardSpacing) * 6, 0);
+            cardTopGroup = CreateStatCard("🔥📊", "أفضل فئة", "غير محدد", Color.FromArgb(26, 188, 156), startX + (cardWidth + cardSpacing) * 7, 0);
 
             statsPanel.Controls.AddRange(new Control[] { 
                 cardTotalProducts, cardLowStock, cardProductsWithStock, cardNearExpiry, cardTotalSales, cardTotalCash,
