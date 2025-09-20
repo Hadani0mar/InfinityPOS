@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 >nul
-title SmartInventory Pro Installer v1.5.2
+title SmartInventory Pro Installer v1.6.0
 
 echo.
 echo ========================================
-echo    SmartInventory Pro Installer v1.5.2
+echo    SmartInventory Pro Installer v1.6.0
 echo ========================================
 echo.
 echo مرحباً بك في SmartInventory Pro

@@ -143,12 +143,12 @@ pause >nul
       if: github.event_name == 'push'
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.5.2
-        name: SmartInventory Pro v1.5.2
+        tag_name: v1.6.0
+        name: SmartInventory Pro v1.6.0
         body: |
           ## تحديث تلقائي
           
-          - **الإصدار**: v1.5.2
+          - **الإصدار**: v1.6.0
           - **التاريخ**: ${{ github.event.head_commit.timestamp }}
           - **الرسالة**: ${{ github.event.head_commit.message }}
           
