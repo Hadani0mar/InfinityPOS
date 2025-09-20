@@ -1,0 +1,89 @@
+@echo off
+chcp 65001 >nul
+title SmartInventory Pro Installer v1.5.1
+
+echo.
+echo ========================================
+echo    SmartInventory Pro Installer v1.5.1
+echo ========================================
+echo.
+echo مرحباً بك في SmartInventory Pro
+echo.
+echo سيقوم هذا المعالج بتثبيت SmartInventory Pro على جهازك.
+echo SmartInventory Pro هو نظام إدارة أعمال متقدم يوفر إدارة شاملة للمخزون والمبيعات.
+echo.
+
+set "APP_NAME=SmartInventory Pro"
+set "APP_DIR=%PROGRAMFILES%\%APP_NAME%"
+set "START_MENU=%APPDATA%\Microsoft\Windows\Start Menu\Programs"
+
+echo [INFO] تثبيت %APP_NAME%...
+echo.
+
+REM Create application directory
+if not exist "%APP_DIR%" (
+    mkdir "%APP_DIR%"
+    echo [SUCCESS] تم إنشاء مجلد التطبيق
+)
+
+REM Copy application files
+echo [INFO] نسخ ملفات التطبيق...
+if exist "publish\*" (
+    xcopy "publish\*" "%APP_DIR%\" /Y /E /I
+    if exist "appsettings.json" copy "appsettings.json" "%APP_DIR%\" >nul
+    if exist "DOWNLOAD_FROM_GITHUB.md" copy "DOWNLOAD_FROM_GITHUB.md" "%APP_DIR%\" >nul
+    echo [SUCCESS] تم نسخ ملفات التطبيق
+) else (
+    echo [ERROR] ملفات التطبيق غير موجودة. تأكد من بناء التطبيق أولاً.
+    echo.
+    echo اضغط أي مفتاح للخروج...
+    pause >nul
+    exit /b 1
+)
+
+REM Create Start Menu shortcut
+echo [INFO] إنشاء اختصار في قائمة ابدأ...
+powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%START_MENU%\%APP_NAME%.lnk'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Advanced Business Management System'; $Shortcut.Save()" 2>nul
+if exist "%START_MENU%\%APP_NAME%.lnk" (
+    echo [SUCCESS] تم إنشاء اختصار في قائمة ابدأ
+) else (
+    echo [WARNING] فشل في إنشاء اختصار في قائمة ابدأ
+)
+
+REM Create Desktop shortcut
+echo [INFO] إنشاء اختصار على سطح المكتب...
+set "DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\%APP_NAME%.lnk"
+powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%DESKTOP_SHORTCUT%'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Advanced Business Management System'; $Shortcut.Save()" 2>nul
+if exist "%DESKTOP_SHORTCUT%" (
+    echo [SUCCESS] تم إنشاء اختصار على سطح المكتب
+) else (
+    echo [WARNING] فشل في إنشاء اختصار على سطح المكتب
+)
+
+REM Create uninstaller
+echo [INFO] إنشاء أداة إلغاء التثبيت...
+echo @echo off > "%APP_DIR%\Uninstall.bat"
+echo chcp 65001 ^>nul >> "%APP_DIR%\Uninstall.bat"
+echo title إلغاء تثبيت SmartInventory Pro >> "%APP_DIR%\Uninstall.bat"
+echo echo إلغاء تثبيت %APP_NAME%... >> "%APP_DIR%\Uninstall.bat"
+echo taskkill /f /im SmartInventoryPro.exe 2^>nul >> "%APP_DIR%\Uninstall.bat"
+echo timeout /t 2 /nobreak ^>nul >> "%APP_DIR%\Uninstall.bat"
+echo rmdir /s /q "%APP_DIR%" >> "%APP_DIR%\Uninstall.bat"
+echo del "%START_MENU%\%APP_NAME%.lnk" 2^>nul >> "%APP_DIR%\Uninstall.bat"
+echo del "%DESKTOP_SHORTCUT%" 2^>nul >> "%APP_DIR%\Uninstall.bat"
+echo echo تم إلغاء التثبيت بنجاح! >> "%APP_DIR%\Uninstall.bat"
+echo pause >> "%APP_DIR%\Uninstall.bat"
+
+echo.
+echo ========================================
+echo    تم التثبيت بنجاح!
+echo ========================================
+echo.
+echo تم تثبيت %APP_NAME% في: %APP_DIR%
+echo تم إنشاء اختصارات في قائمة ابدأ وسطح المكتب
+echo.
+echo للبدء: اضغط على الاختصار أو اذهب إلى %APP_DIR%
+echo لإلغاء التثبيت: شغل %APP_DIR%\Uninstall.bat
+echo.
+echo اضغط أي مفتاح للخروج...
+pause >nul
