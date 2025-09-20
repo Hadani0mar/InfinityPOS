@@ -287,6 +287,19 @@ pause
         {
             try
             {
+                // محاولة قراءة الإصدار من appsettings.json أولاً
+                var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+                if (File.Exists(appSettingsPath))
+                {
+                    var json = File.ReadAllText(appSettingsPath);
+                    var settings = JsonConvert.DeserializeObject<dynamic>(json);
+                    if (settings?.Application?.Version != null)
+                    {
+                        return settings.Application.Version.ToString();
+                    }
+                }
+                
+                // إذا فشل، استخدم assembly version
                 var assembly = Assembly.GetExecutingAssembly();
                 if (assembly?.GetName()?.Version != null)
                 {
