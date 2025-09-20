@@ -92,3 +92,4 @@ pause
 
 :: تشغيل التطبيق
 start "" "%APP_DIR%\SmartInventoryPro.exe"
+

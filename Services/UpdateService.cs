@@ -75,20 +75,27 @@ namespace SmartInventoryPro.Services
                 
                 var currentVersion = GetCurrentVersion();
                 var latestVersion = release.TagName?.Replace("v", "").Replace("V", "") ?? "1.0.0";
+                
+                // حماية إضافية من القيم الفارغة
+                var lastMessage = !string.IsNullOrEmpty(release.Body) ? release.Body : "تحديث جديد متاح";
+                var lastDate = release.PublishedAt != default ? release.PublishedAt.ToString("yyyy-MM-dd HH:mm:ss") : DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                var lastHash = !string.IsNullOrEmpty(release.TagName) ? release.TagName : "unknown";
+                var downloadUrl = release.Assets?.FirstOrDefault()?.BrowserDownloadUrl ?? "";
 
                 return new UpdateInfo
                 {
                     HasUpdates = IsNewerVersion(latestVersion, currentVersion),
                     LocalCommit = currentVersion,
                     RemoteCommit = latestVersion,
-                    LastMessage = release.Body ?? "تحديث جديد متاح",
-                    LastDate = release.PublishedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                    LastHash = release.TagName ?? "unknown",
-                    DownloadUrl = release.Assets?.FirstOrDefault()?.BrowserDownloadUrl ?? ""
+                    LastMessage = lastMessage,
+                    LastDate = lastDate,
+                    LastHash = lastHash,
+                    DownloadUrl = downloadUrl
                 };
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"خطأ في جلب التحديثات من GitHub: {ex.Message}");
                 return new UpdateInfo { HasUpdates = false, Error = ex.Message };
             }
         }
@@ -163,7 +170,7 @@ namespace SmartInventoryPro.Services
 
         private string CreateUpdateScript(string updatePath)
         {
-            var currentPath = AppContext.BaseDirectory;
+            var currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Environment.CurrentDirectory;
             var appName = "SmartInventoryPro.exe";
 
             return $@"
@@ -199,15 +206,17 @@ pause
         {
             try
             {
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
-                if (version != null)
+                var assembly = Assembly.GetExecutingAssembly();
+                if (assembly?.GetName()?.Version != null)
                 {
+                    var version = assembly.GetName().Version;
                     return $"{version.Major}.{version.Minor}.{version.Build}";
                 }
                 return "1.0.0";
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"خطأ في جلب الإصدار: {ex.Message}");
                 return "1.0.0";
             }
         }
