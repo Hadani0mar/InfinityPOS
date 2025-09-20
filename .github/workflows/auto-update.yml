@@ -33,6 +33,12 @@ jobs:
     
     - name: Create Release Package
       run: |
+        # نسخ ملف appsettings.json إلى مجلد publish
+        Copy-Item "./appsettings.json" "./publish/appsettings.json" -Force
+        
+        # نسخ ملف README إلى مجلد publish
+        Copy-Item "./DOWNLOAD_FROM_GITHUB.md" "./publish/README.md" -Force
+        
         # إنشاء ملف ZIP للتحديث
         Compress-Archive -Path "./publish/*" -DestinationPath "./SmartInventoryPro_Update.zip" -Force
         
