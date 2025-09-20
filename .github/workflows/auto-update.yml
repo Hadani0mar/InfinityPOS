@@ -42,22 +42,22 @@ jobs:
     
     - name: Create Release Package
       run: |
-        # نسخ ملف appsettings.json إلى مجلد publish
+        # Copy appsettings.json to publish directory
         Copy-Item "./appsettings.json" "./publish/appsettings.json" -Force
         
-        # نسخ ملف README إلى مجلد publish
+        # Copy README to publish directory
         Copy-Item "./DOWNLOAD_FROM_GITHUB.md" "./publish/README.md" -Force
         
-        # إنشاء مجلد dist للمثبت
+        # Create dist directory for installer
         New-Item -ItemType Directory -Path "./dist" -Force
         New-Item -ItemType Directory -Path "./dist/publish" -Force
         
-        # نسخ ملفات التطبيق إلى dist
+        # Copy application files to dist
         Copy-Item "./publish/*" "./dist/publish/" -Recurse -Force
         Copy-Item "./appsettings.json" "./dist/" -Force
         Copy-Item "./DOWNLOAD_FROM_GITHUB.md" "./dist/" -Force
         
-        # إنشاء المثبت
+        # Create installer
         $installerContent = @"
 @echo off
 chcp 65001 >nul
@@ -120,13 +120,13 @@ pause >nul
 "@
         $installerContent | Out-File -FilePath "./dist/SmartInventoryPro_Setup_v1.5.1.exe" -Encoding UTF8
         
-        # إنشاء ملف ZIP للتحديث
+        # Create update ZIP file
         Compress-Archive -Path "./publish/*" -DestinationPath "./SmartInventoryPro_Update.zip" -Force
         
-        # إنشاء ملف ZIP للمثبت
+        # Create installer ZIP file
         Compress-Archive -Path "./dist/*" -DestinationPath "./SmartInventoryPro_Installer.zip" -Force
         
-        # إنشاء ملف معلومات التحديث
+        # Create update info file
         $version = (Get-Content "./InfinityPOS.csproj" | Select-String "Version" | ForEach-Object { $_.Line -replace '.*Version>([^<]+)<.*', '$1' })
         $commitMessage = "${{ github.event.head_commit.message }}"
         $updateInfo = @{
