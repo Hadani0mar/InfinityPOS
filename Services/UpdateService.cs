@@ -44,25 +44,12 @@ namespace SmartInventoryPro.Services
                     };
                 }
 
-                // إذا فشل GitHub، جرب الخادم المحلي
-                try
+                // إذا فشل GitHub، أعد رسالة خطأ واضحة
+                return new UpdateInfo
                 {
-                    var response = await _httpClient.GetStringAsync($"{API_BASE_URL}check-updates.php");
-                    if (!string.IsNullOrEmpty(response))
-                    {
-                        return JsonConvert.DeserializeObject<UpdateInfo>(response) ?? new UpdateInfo { HasUpdates = false, Error = "Invalid response from server" };
-                    }
-                }
-                catch (Exception serverEx)
-                {
-                    return new UpdateInfo
-                    {
-                        HasUpdates = false,
-                        Error = $"GitHub: {githubUpdate.Error}, Server: {serverEx.Message}"
-                    };
-                }
-
-                return new UpdateInfo { HasUpdates = false, Error = "No update sources available" };
+                    HasUpdates = false,
+                    Error = $"خطأ في الاتصال: {githubUpdate.Error}"
+                };
             }
             catch (Exception ex)
             {
@@ -176,7 +163,7 @@ namespace SmartInventoryPro.Services
 
         private string CreateUpdateScript(string updatePath)
         {
-            var currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var currentPath = AppContext.BaseDirectory;
             var appName = "SmartInventoryPro.exe";
 
             return $@"
