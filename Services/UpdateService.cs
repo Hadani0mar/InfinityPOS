@@ -28,8 +28,21 @@ namespace SmartInventoryPro.Services
             {
                 // محاولة جلب التحديثات من GitHub أولاً
                 var githubUpdate = await CheckGitHubUpdatesAsync();
-                if (githubUpdate.HasUpdates || !string.IsNullOrEmpty(githubUpdate.Error))
+                if (githubUpdate.HasUpdates)
                     return githubUpdate;
+                
+                // إذا لم توجد تحديثات، أعد النتيجة بدون خطأ
+                if (string.IsNullOrEmpty(githubUpdate.Error))
+                {
+                    return new UpdateInfo 
+                    { 
+                        HasUpdates = false, 
+                        LocalCommit = GetCurrentVersion(),
+                        RemoteCommit = "latest",
+                        LastMessage = "التطبيق محدث",
+                        LastDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    };
+                }
 
                 // إذا فشل GitHub، جرب الخادم المحلي
                 try
@@ -74,7 +87,7 @@ namespace SmartInventoryPro.Services
                 }
                 
                 var currentVersion = GetCurrentVersion();
-                var latestVersion = release.TagName.Replace("v", "").Replace("V", "");
+                var latestVersion = release.TagName?.Replace("v", "").Replace("V", "") ?? "1.0.0";
 
                 return new UpdateInfo
                 {
@@ -83,7 +96,7 @@ namespace SmartInventoryPro.Services
                     RemoteCommit = latestVersion,
                     LastMessage = release.Body ?? "تحديث جديد متاح",
                     LastDate = release.PublishedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                    LastHash = release.TagName,
+                    LastHash = release.TagName ?? "unknown",
                     DownloadUrl = release.Assets?.FirstOrDefault()?.BrowserDownloadUrl ?? ""
                 };
             }
