@@ -6,6 +6,7 @@ on:
     tags: [ 'v*' ]
   release:
     types: [ published ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -141,7 +142,7 @@ pause >nul
           update_info.json
     
     - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref_name }}
