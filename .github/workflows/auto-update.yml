@@ -58,68 +58,69 @@ jobs:
         Copy-Item "./appsettings.json" "./dist/" -Force
         Copy-Item "./DOWNLOAD_FROM_GITHUB.md" "./dist/" -Force
         
-        # Create installer
-        $installerContent = @'
-@echo off
-chcp 65001 >nul
-title SmartInventory Pro Installer v1.6.0
-echo.
-echo ========================================
-echo    SmartInventory Pro Installer v1.6.0
-echo ========================================
-echo.
-echo Welcome to SmartInventory Pro
-echo.
-echo This installer will install SmartInventory Pro on your computer.
-echo SmartInventory Pro is an advanced business management system.
-echo.
-set "APP_NAME=SmartInventory Pro"
-set "APP_DIR=%PROGRAMFILES%\%APP_NAME%"
-set "START_MENU=%APPDATA%\Microsoft\Windows\Start Menu\Programs"
-echo [INFO] Installing %APP_NAME%...
-echo.
-if not exist "%APP_DIR%" mkdir "%APP_DIR%"
-REM Check if application is already installed
-if exist "%APP_DIR%\SmartInventoryPro.exe" (
-    echo [INFO] Found existing installation
-    echo [INFO] Updating application...
-    echo.
-    REM Stop running application
-    taskkill /f /im SmartInventoryPro.exe 2>nul
-    timeout /t 2 /nobreak >nul
-)
-echo [INFO] Copying application files...
-xcopy "publish\*" "%APP_DIR%\" /Y /E /I
-REM Only copy appsettings.json if it doesn't exist (preserve user settings)
-if not exist "%APP_DIR%\appsettings.json" (
-    if exist "appsettings.json" copy "appsettings.json" "%APP_DIR%\" >nul
-    echo [INFO] Copied default settings file
-) else (
-    echo [INFO] Preserved user settings
-)
-echo [SUCCESS] Application files copied
-echo [INFO] Creating shortcuts...
-powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%START_MENU%\%APP_NAME%.lnk'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro'; $Shortcut.Save()" 2>nul
-set "DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\%APP_NAME%.lnk"
-powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%DESKTOP_SHORTCUT%'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro'; $Shortcut.Save()" 2>nul
-echo.
-echo ========================================
-if exist "%APP_DIR%\SmartInventoryPro.exe" (
-    echo    Update completed successfully!
-) else (
-    echo    Installation completed successfully!
-)
-echo ========================================
-echo.
-echo %APP_NAME% installed/updated in: %APP_DIR%
-echo Shortcuts created in Start Menu and Desktop
-echo.
-echo Note: Your settings have been preserved
-echo.
-echo Press any key to exit...
-pause >nul
-'@
-        $installerContent | Out-File -FilePath "./dist/SmartInventoryPro_Setup_v1.5.1.exe" -Encoding UTF8
+        # Create installer using simple method
+        $installerLines = @(
+            "@echo off",
+            "chcp 65001 >nul",
+            "title SmartInventory Pro Installer v1.6.0",
+            "echo.",
+            "echo ========================================",
+            "echo    SmartInventory Pro Installer v1.6.0",
+            "echo ========================================",
+            "echo.",
+            "echo Welcome to SmartInventory Pro",
+            "echo.",
+            "echo This installer will install SmartInventory Pro on your computer.",
+            "echo SmartInventory Pro is an advanced business management system.",
+            "echo.",
+            "set \"APP_NAME=SmartInventory Pro\"",
+            "set \"APP_DIR=%PROGRAMFILES%\%APP_NAME%\"",
+            "set \"START_MENU=%APPDATA%\Microsoft\Windows\Start Menu\Programs\"",
+            "echo [INFO] Installing %APP_NAME%...",
+            "echo.",
+            "if not exist \"%APP_DIR%\" mkdir \"%APP_DIR%\"",
+            "REM Check if application is already installed",
+            "if exist \"%APP_DIR%\SmartInventoryPro.exe\" (",
+            "    echo [INFO] Found existing installation",
+            "    echo [INFO] Updating application...",
+            "    echo.",
+            "    REM Stop running application",
+            "    taskkill /f /im SmartInventoryPro.exe 2>nul",
+            "    timeout /t 2 /nobreak >nul",
+            ")",
+            "echo [INFO] Copying application files...",
+            "xcopy \"publish\*\" \"%APP_DIR%\" /Y /E /I",
+            "REM Only copy appsettings.json if it doesn't exist (preserve user settings)",
+            "if not exist \"%APP_DIR%\appsettings.json\" (",
+            "    if exist \"appsettings.json\" copy \"appsettings.json\" \"%APP_DIR%\" >nul",
+            "    echo [INFO] Copied default settings file",
+            ") else (",
+            "    echo [INFO] Preserved user settings",
+            ")",
+            "echo [SUCCESS] Application files copied",
+            "echo [INFO] Creating shortcuts...",
+            "powershell -Command \"$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%START_MENU%\%APP_NAME%.lnk'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro'; $Shortcut.Save()\" 2>nul",
+            "set \"DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\%APP_NAME%.lnk\"",
+            "powershell -Command \"$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%DESKTOP_SHORTCUT%'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro'; $Shortcut.Save()\" 2>nul",
+            "echo.",
+            "echo ========================================",
+            "if exist \"%APP_DIR%\SmartInventoryPro.exe\" (",
+            "    echo    Update completed successfully!",
+            ") else (",
+            "    echo    Installation completed successfully!",
+            ")",
+            "echo ========================================",
+            "echo.",
+            "echo %APP_NAME% installed/updated in: %APP_DIR%",
+            "echo Shortcuts created in Start Menu and Desktop",
+            "echo.",
+            "echo Note: Your settings have been preserved",
+            "echo.",
+            "echo Press any key to exit...",
+            "pause >nul"
+        )
+        $installerContent = $installerLines -join "`n"
+        $installerContent | Out-File -FilePath "./dist/SmartInventoryPro_Setup_v1.6.0.exe" -Encoding UTF8
         
         # Create update ZIP file
         Compress-Archive -Path "./publish/*" -DestinationPath "./SmartInventoryPro_Update.zip" -Force
