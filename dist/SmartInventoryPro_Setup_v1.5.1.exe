@@ -26,11 +26,27 @@ if not exist "%APP_DIR%" (
     echo [SUCCESS] تم إنشاء مجلد التطبيق
 )
 
+REM Check if application is already installed
+if exist "%APP_DIR%\SmartInventoryPro.exe" (
+    echo [INFO] تم العثور على إصدار مثبت مسبقاً
+    echo [INFO] سيتم تحديث التطبيق...
+    echo.
+    REM Stop running application
+    taskkill /f /im SmartInventoryPro.exe 2>nul
+    timeout /t 2 /nobreak >nul
+)
+
 REM Copy application files
 echo [INFO] نسخ ملفات التطبيق...
 if exist "publish\*" (
     xcopy "publish\*" "%APP_DIR%\" /Y /E /I
-    if exist "appsettings.json" copy "appsettings.json" "%APP_DIR%\" >nul
+    REM Only copy appsettings.json if it doesn't exist (preserve user settings)
+    if not exist "%APP_DIR%\appsettings.json" (
+        if exist "appsettings.json" copy "appsettings.json" "%APP_DIR%\" >nul
+        echo [INFO] تم نسخ ملف الإعدادات الافتراضي
+    ) else (
+        echo [INFO] تم الاحتفاظ بإعدادات المستخدم الموجودة
+    )
     if exist "DOWNLOAD_FROM_GITHUB.md" copy "DOWNLOAD_FROM_GITHUB.md" "%APP_DIR%\" >nul
     echo [SUCCESS] تم نسخ ملفات التطبيق
 ) else (
@@ -76,14 +92,20 @@ echo pause >> "%APP_DIR%\Uninstall.bat"
 
 echo.
 echo ========================================
-echo    تم التثبيت بنجاح!
+if exist "%APP_DIR%\SmartInventoryPro.exe" (
+    echo    تم التحديث بنجاح!
+) else (
+    echo    تم التثبيت بنجاح!
+)
 echo ========================================
 echo.
-echo تم تثبيت %APP_NAME% في: %APP_DIR%
+echo تم تثبيت/تحديث %APP_NAME% في: %APP_DIR%
 echo تم إنشاء اختصارات في قائمة ابدأ وسطح المكتب
 echo.
 echo للبدء: اضغط على الاختصار أو اذهب إلى %APP_DIR%
 echo لإلغاء التثبيت: شغل %APP_DIR%\Uninstall.bat
+echo.
+echo ملاحظة: تم الاحتفاظ بإعداداتك المحفوظة
 echo.
 echo اضغط أي مفتاح للخروج...
 pause >nul
