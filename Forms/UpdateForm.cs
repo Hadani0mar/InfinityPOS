@@ -158,9 +158,15 @@ namespace SmartInventoryPro.Forms
                     lblStatus.Text = "✅ توجد تحديثات جديدة متاحة!";
                     lblStatus.ForeColor = Color.FromArgb(46, 204, 113);
                     
+                    var hashDisplay = "unknown";
+                    if (!string.IsNullOrEmpty(updateInfo.LastHash) && updateInfo.LastHash.Length >= 8)
+                    {
+                        hashDisplay = updateInfo.LastHash.Substring(0, 8);
+                    }
+                    
                     lblUpdateInfo.Text = $"📝 محتوى التحديث:\n{updateInfo.LastMessage}\n\n" +
                                        $"🕒 تاريخ النشر: {updateInfo.LastDate}\n" +
-                                       $"🔗 معرف التحديث: {updateInfo.LastHash?.Substring(0, 8)}...\n" +
+                                       $"🔗 معرف التحديث: {hashDisplay}...\n" +
                                        $"📊 الإصدار الحالي: {updateInfo.LocalCommit}\n" +
                                        $"🚀 الإصدار الجديد: {updateInfo.RemoteCommit}";
                     
@@ -203,9 +209,15 @@ namespace SmartInventoryPro.Forms
                     lblStatus.Text = "✅ تم تطبيق التحديث بنجاح!";
                     lblStatus.ForeColor = Color.FromArgb(46, 204, 113);
                     
+                    var newCommitDisplay = "unknown";
+                    if (!string.IsNullOrEmpty(result.NewCommit) && result.NewCommit.Length >= 8)
+                    {
+                        newCommitDisplay = result.NewCommit.Substring(0, 8);
+                    }
+                    
                     lblUpdateInfo.Text = $"📝 التحديث الجديد: {result.NewMessage}\n" +
                                        $"🕒 تاريخ التحديث: {result.NewDate}\n" +
-                                       $"🔗 معرف التحديث: {result.NewCommit?.Substring(0, 8)}...";
+                                       $"🔗 معرف التحديث: {newCommitDisplay}...";
                     
                     btnApplyUpdate.Enabled = false;
                     btnApplyUpdate.Text = "✅ تم التحديث";

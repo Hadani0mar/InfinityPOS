@@ -31,13 +31,22 @@ if %errorLevel% == 0 (
     exit /b 1
 )
 
+:: نسخ ملف الإعدادات
+if exist "appsettings.json" (
+    copy "appsettings.json" "%APP_DIR%\" >nul
+    echo [SUCCESS] تم نسخ ملف الإعدادات
+) else (
+    echo [WARNING] ملف appsettings.json غير موجود، سيتم إنشاء ملف افتراضي
+    echo {} > "%APP_DIR%\appsettings.json"
+)
+
 :: إنشاء اختصار في قائمة ابدأ
 echo [INFO] إنشاء اختصار في قائمة ابدأ...
 set "START_MENU=%APPDATA%\Microsoft\Windows\Start Menu\Programs"
 set "SHORTCUT_PATH=%START_MENU%\SmartInventory Pro.lnk"
 
-:: استخدام PowerShell لإنشاء الاختصار
-powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Advanced Business Management System'; $Shortcut.Save()"
+:: استخدام PowerShell لإنشاء الاختصار مع الأيقونة
+powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Advanced Business Management System'; $Shortcut.IconLocation = '%APP_DIR%\SmartInventoryPro.exe,0'; $Shortcut.Save()"
 
 if exist "%SHORTCUT_PATH%" (
     echo [SUCCESS] تم إنشاء اختصار في قائمة ابدأ
@@ -48,7 +57,7 @@ if exist "%SHORTCUT_PATH%" (
 :: إنشاء اختصار على سطح المكتب
 echo [INFO] إنشاء اختصار على سطح المكتب...
 set "DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\SmartInventory Pro.lnk"
-powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%DESKTOP_SHORTCUT%'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Advanced Business Management System'; $Shortcut.Save()"
+powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%DESKTOP_SHORTCUT%'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Advanced Business Management System'; $Shortcut.IconLocation = '%APP_DIR%\SmartInventoryPro.exe,0'; $Shortcut.Save()"
 
 if exist "%DESKTOP_SHORTCUT%" (
     echo [SUCCESS] تم إنشاء اختصار على سطح المكتب
@@ -92,4 +101,5 @@ pause
 
 :: تشغيل التطبيق
 start "" "%APP_DIR%\SmartInventoryPro.exe"
+
 

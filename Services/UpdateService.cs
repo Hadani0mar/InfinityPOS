@@ -34,10 +34,11 @@ namespace SmartInventoryPro.Services
                 // إذا لم توجد تحديثات، أعد النتيجة بدون خطأ
                 if (string.IsNullOrEmpty(githubUpdate.Error))
                 {
+                    var currentVersion = GetCurrentVersion();
                     return new UpdateInfo 
                     { 
                         HasUpdates = false, 
-                        LocalCommit = GetCurrentVersion(),
+                        LocalCommit = currentVersion,
                         RemoteCommit = "latest",
                         LastMessage = "التطبيق محدث",
                         LastDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
@@ -45,18 +46,25 @@ namespace SmartInventoryPro.Services
                 }
 
                 // إذا فشل GitHub، أعد رسالة خطأ واضحة
+                var errorMessage = "خطأ غير معروف";
+                if (!string.IsNullOrEmpty(githubUpdate.Error))
+                {
+                    errorMessage = $"خطأ في الاتصال: {githubUpdate.Error}";
+                }
                 return new UpdateInfo
                 {
                     HasUpdates = false,
-                    Error = $"خطأ في الاتصال: {githubUpdate.Error}"
+                    Error = errorMessage
                 };
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"خطأ في CheckForUpdatesAsync: {ex.Message}");
+                var exceptionMessage = ex.Message ?? "خطأ غير معروف";
                 return new UpdateInfo
                 {
                     HasUpdates = false,
-                    Error = $"خطأ في الاتصال: {ex.Message}"
+                    Error = $"خطأ في الاتصال: {exceptionMessage}"
                 };
             }
         }
@@ -74,13 +82,29 @@ namespace SmartInventoryPro.Services
                 }
                 
                 var currentVersion = GetCurrentVersion();
-                var latestVersion = release.TagName?.Replace("v", "").Replace("V", "") ?? "1.0.0";
+                var latestVersion = "1.0.0";
+                if (!string.IsNullOrEmpty(release.TagName))
+                {
+                    latestVersion = release.TagName.Replace("v", "").Replace("V", "");
+                }
                 
                 // حماية إضافية من القيم الفارغة
                 var lastMessage = !string.IsNullOrEmpty(release.Body) ? release.Body : "تحديث جديد متاح";
                 var lastDate = release.PublishedAt != default ? release.PublishedAt.ToString("yyyy-MM-dd HH:mm:ss") : DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                var lastHash = !string.IsNullOrEmpty(release.TagName) ? release.TagName : "unknown";
-                var downloadUrl = release.Assets?.FirstOrDefault()?.BrowserDownloadUrl ?? "";
+                var lastHash = "unknown";
+                if (!string.IsNullOrEmpty(release.TagName))
+                {
+                    lastHash = release.TagName;
+                }
+                var downloadUrl = "";
+                if (release.Assets != null && release.Assets.Length > 0)
+                {
+                    var firstAsset = release.Assets.FirstOrDefault();
+                    if (firstAsset != null && !string.IsNullOrEmpty(firstAsset.BrowserDownloadUrl))
+                    {
+                        downloadUrl = firstAsset.BrowserDownloadUrl;
+                    }
+                }
 
                 return new UpdateInfo
                 {
@@ -93,9 +117,19 @@ namespace SmartInventoryPro.Services
                     DownloadUrl = downloadUrl
                 };
             }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"خطأ في الاتصال بـ GitHub: {ex.Message}");
+                return new UpdateInfo { HasUpdates = false, Error = $"خطأ في الاتصال: {ex.Message}" };
+            }
+            catch (JsonException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"خطأ في تحليل JSON: {ex.Message}");
+                return new UpdateInfo { HasUpdates = false, Error = $"خطأ في تحليل البيانات: {ex.Message}" };
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"خطأ في جلب التحديثات من GitHub: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"خطأ عام في جلب التحديثات من GitHub: {ex.Message}");
                 return new UpdateInfo { HasUpdates = false, Error = ex.Message };
             }
         }
@@ -129,6 +163,15 @@ namespace SmartInventoryPro.Services
         {
             try
             {
+                if (string.IsNullOrEmpty(downloadUrl))
+                {
+                    return new UpdateResult
+                    {
+                        Success = false,
+                        Error = "رابط التحميل فارغ"
+                    };
+                }
+
                 var tempPath = Path.Combine(Path.GetTempPath(), "SmartInventoryPro_Update.zip");
                 var updatePath = Path.Combine(Path.GetTempPath(), "SmartInventoryPro_Update");
 
@@ -158,8 +201,18 @@ namespace SmartInventoryPro.Services
                     NewMessage = "تم بدء عملية التحديث. سيتم إعادة تشغيل التطبيق تلقائياً."
                 };
             }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"خطأ في تحميل التحديث: {ex.Message}");
+                return new UpdateResult
+                {
+                    Success = false,
+                    Error = $"خطأ في تحميل التحديث: {ex.Message}"
+                };
+            }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"خطأ عام في DownloadAndApplyUpdateAsync: {ex.Message}");
                 return new UpdateResult
                 {
                     Success = false,
@@ -170,10 +223,21 @@ namespace SmartInventoryPro.Services
 
         private string CreateUpdateScript(string updatePath)
         {
-            var currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Environment.CurrentDirectory;
-            var appName = "SmartInventoryPro.exe";
+            try
+            {
+                // استخدام AppContext.BaseDirectory للـ single-file apps
+                var currentPath = AppContext.BaseDirectory;
+                if (string.IsNullOrEmpty(currentPath))
+                {
+                    currentPath = Environment.CurrentDirectory;
+                }
+                if (string.IsNullOrEmpty(currentPath))
+                {
+                    currentPath = Directory.GetCurrentDirectory();
+                }
+                var appName = "SmartInventoryPro.exe";
 
-            return $@"
+                return $@"
 @echo off
 echo تحديث SmartInventory Pro...
 echo.
@@ -184,6 +248,13 @@ timeout /t 3 /nobreak >nul
 REM نسخ الملفات الجديدة
 echo نسخ الملفات الجديدة...
 xcopy ""{updatePath}\*"" ""{currentPath}\"" /Y /E /I
+
+REM التأكد من وجود ملف appsettings.json
+if not exist ""{currentPath}\appsettings.json"" (
+    echo تحذير: ملف appsettings.json مفقود!
+    echo إنشاء ملف إعدادات افتراضي...
+    echo {{}} > ""{currentPath}\appsettings.json""
+)
 
 REM تنظيف الملفات المؤقتة
 echo تنظيف الملفات المؤقتة...
@@ -200,6 +271,16 @@ del ""%~f0""
 echo تم التحديث بنجاح!
 pause
 ";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"خطأ في CreateUpdateScript: {ex.Message}");
+                return $@"
+@echo off
+echo خطأ في إنشاء سكريبت التحديث: {ex.Message}
+pause
+";
+            }
         }
 
         private string GetCurrentVersion()
@@ -210,7 +291,10 @@ pause
                 if (assembly?.GetName()?.Version != null)
                 {
                     var version = assembly.GetName().Version;
-                    return $"{version.Major}.{version.Minor}.{version.Build}";
+                    if (version != null)
+                    {
+                        return $"{version.Major}.{version.Minor}.{version.Build}";
+                    }
                 }
                 return "1.0.0";
             }
@@ -244,8 +328,9 @@ pause
                 }
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"خطأ في مقارنة الإصدارات: {ex.Message}");
                 return false;
             }
         }

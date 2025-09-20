@@ -1048,10 +1048,16 @@ namespace SmartInventoryPro.Forms
                 
                 if (updateInfo.HasUpdates)
                 {
+                    var hashDisplay = "unknown";
+                    if (!string.IsNullOrEmpty(updateInfo.LastHash) && updateInfo.LastHash.Length >= 8)
+                    {
+                        hashDisplay = updateInfo.LastHash.Substring(0, 8);
+                    }
+                    
                     var updateMessage = $"🔄 توجد تحديثات جديدة متاحة!\n\n" +
                                       $"📝 محتوى التحديث:\n{updateInfo.LastMessage}\n\n" +
                                       $"🕒 تاريخ النشر: {updateInfo.LastDate}\n" +
-                                      $"🔗 معرف التحديث: {updateInfo.LastHash?.Substring(0, 8)}...\n\n" +
+                                      $"🔗 معرف التحديث: {hashDisplay}...\n\n" +
                                       $"هل تريد تحميل التحديث الآن؟";
                     
                     var result = MessageBox.Show(
