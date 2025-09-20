@@ -28,19 +28,35 @@ namespace SmartInventoryPro.Services
             {
                 // محاولة جلب التحديثات من GitHub أولاً
                 var githubUpdate = await CheckGitHubUpdatesAsync();
-                if (githubUpdate.HasUpdates)
+                if (githubUpdate.HasUpdates || !string.IsNullOrEmpty(githubUpdate.Error))
                     return githubUpdate;
 
                 // إذا فشل GitHub، جرب الخادم المحلي
-                var response = await _httpClient.GetStringAsync($"{API_BASE_URL}check-updates.php");
-                return JsonConvert.DeserializeObject<UpdateInfo>(response);
+                try
+                {
+                    var response = await _httpClient.GetStringAsync($"{API_BASE_URL}check-updates.php");
+                    if (!string.IsNullOrEmpty(response))
+                    {
+                        return JsonConvert.DeserializeObject<UpdateInfo>(response) ?? new UpdateInfo { HasUpdates = false, Error = "Invalid response from server" };
+                    }
+                }
+                catch (Exception serverEx)
+                {
+                    return new UpdateInfo
+                    {
+                        HasUpdates = false,
+                        Error = $"GitHub: {githubUpdate.Error}, Server: {serverEx.Message}"
+                    };
+                }
+
+                return new UpdateInfo { HasUpdates = false, Error = "No update sources available" };
             }
             catch (Exception ex)
             {
                 return new UpdateInfo
                 {
                     HasUpdates = false,
-                    Error = ex.Message
+                    Error = $"خطأ في الاتصال: {ex.Message}"
                 };
             }
         }
@@ -52,22 +68,28 @@ namespace SmartInventoryPro.Services
                 var response = await _httpClient.GetStringAsync($"{GITHUB_REPO}/releases/latest");
                 var release = JsonConvert.DeserializeObject<GitHubRelease>(response);
                 
+                if (release == null || string.IsNullOrEmpty(release.TagName))
+                {
+                    return new UpdateInfo { HasUpdates = false, Error = "No release data found" };
+                }
+                
                 var currentVersion = GetCurrentVersion();
-                var latestVersion = release.TagName.Replace("v", "");
+                var latestVersion = release.TagName.Replace("v", "").Replace("V", "");
 
                 return new UpdateInfo
                 {
                     HasUpdates = IsNewerVersion(latestVersion, currentVersion),
                     LocalCommit = currentVersion,
                     RemoteCommit = latestVersion,
-                    LastMessage = release.Body,
+                    LastMessage = release.Body ?? "تحديث جديد متاح",
                     LastDate = release.PublishedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                    DownloadUrl = release.Assets?.FirstOrDefault()?.BrowserDownloadUrl
+                    LastHash = release.TagName,
+                    DownloadUrl = release.Assets?.FirstOrDefault()?.BrowserDownloadUrl ?? ""
                 };
             }
-            catch
+            catch (Exception ex)
             {
-                return new UpdateInfo { HasUpdates = false };
+                return new UpdateInfo { HasUpdates = false, Error = ex.Message };
             }
         }
 
@@ -175,16 +197,33 @@ pause
 
         private string GetCurrentVersion()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
-            return $"{version.Major}.{version.Minor}.{version.Build}";
+            try
+            {
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                if (version != null)
+                {
+                    return $"{version.Major}.{version.Minor}.{version.Build}";
+                }
+                return "1.0.0";
+            }
+            catch
+            {
+                return "1.0.0";
+            }
         }
 
         private bool IsNewerVersion(string latest, string current)
         {
             try
             {
-                var latestParts = latest.Split('.').Select(int.Parse).ToArray();
-                var currentParts = current.Split('.').Select(int.Parse).ToArray();
+                if (string.IsNullOrEmpty(latest) || string.IsNullOrEmpty(current))
+                    return false;
+
+                var latestParts = latest.Split('.').Where(x => !string.IsNullOrEmpty(x)).Select(x => int.TryParse(x, out var num) ? num : 0).ToArray();
+                var currentParts = current.Split('.').Where(x => !string.IsNullOrEmpty(x)).Select(x => int.TryParse(x, out var num) ? num : 0).ToArray();
+
+                if (latestParts.Length == 0 || currentParts.Length == 0)
+                    return false;
 
                 for (int i = 0; i < Math.Max(latestParts.Length, currentParts.Length); i++)
                 {
