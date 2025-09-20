@@ -25,6 +25,7 @@ jobs:
         echo "Ref: ${{ github.ref }}"
         echo "Ref name: ${{ github.ref_name }}"
         echo "Ref type: ${{ github.ref_type }}"
+        echo "Should create release: ${{ github.ref_type == 'tag' || github.ref == 'refs/heads/master' }}"
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -149,7 +150,7 @@ pause >nul
           update_info.json
     
     - name: Create Release
-      if: github.ref_type == 'tag'
+      if: github.ref_type == 'tag' || github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref_name }}
