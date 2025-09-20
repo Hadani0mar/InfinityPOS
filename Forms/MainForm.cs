@@ -97,7 +97,7 @@ namespace SmartInventoryPro.Forms
             btnExpiry = CreateModernButton("⏰ تنبيهات انتهاء الصلاحية", Color.FromArgb(231, 76, 60), 440, 15);
             btnExpiry.Click += BtnExpiry_Click;
 
-            btnPerformance = CreateModernButton("👥 إحصائيات الموظفين", Color.FromArgb(155, 89, 182), 650, 15);
+            btnPerformance = CreateModernButton("👥 إحصائيات الموظفين", Color.FromArgb(255, 99, 132), 650, 15);
             btnUpdates = CreateModernButton("🔄 التحديثات", Color.FromArgb(52, 152, 219), 800, 15);
             btnPerformance.Click += BtnPerformance_Click;
             btnUpdates.Click += BtnUpdates_Click;
