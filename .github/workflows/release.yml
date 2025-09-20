@@ -1,0 +1,130 @@
+name: Build and Release SmartInventory Pro
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore InfinityPOS/InfinityPOS.csproj
+      
+    - name: Build and publish
+      run: |
+        dotnet publish InfinityPOS/InfinityPOS.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+        
+    - name: Create release package
+      run: |
+        # Create release directory
+        New-Item -ItemType Directory -Path "./release" -Force
+        
+        # Copy files
+        Copy-Item "./publish/SmartInventoryPro.exe" "./release/"
+        Copy-Item "./InfinityPOS/appsettings.json" "./release/"
+        Copy-Item "./InfinityPOS/SmartInventoryPro_Simple_Installer.bat" "./release/"
+        
+        # Create README
+        @"
+        SmartInventory Pro v2.0.0
+        ==========================
+        
+        Installation Instructions:
+        1. Extract all files to a folder
+        2. Right-click on 'SmartInventoryPro_Simple_Installer.bat'
+        3. Select 'Run as administrator'
+        4. Follow the installation wizard
+        
+        What's New in v2.0.0:
+        - Completely rebuilt installer system
+        - Improved update mechanism
+        - Enhanced stability and performance
+        - Fixed all previous installation issues
+        
+        System Requirements:
+        - Windows 10/11 (64-bit)
+        - .NET Runtime (included)
+        - Administrator privileges for installation
+        
+        Support: https://github.com/Hadani0mar/InfinityPOS/issues
+        "@ | Out-File -FilePath "./release/README.txt" -Encoding UTF8
+        
+        # Create ZIP package
+        Compress-Archive -Path "./release/*" -DestinationPath "./SmartInventoryPro_v2.0.0_Release.zip"
+        
+    - name: Get version from tag
+      id: get_version
+      run: |
+        if ($env:GITHUB_REF -match '^refs/tags/(.*)') {
+          $version = $matches[1]
+        } else {
+          $version = "v2.0.0"
+        }
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: SmartInventory Pro ${{ steps.get_version.outputs.VERSION }}
+        body: |
+          🚀 **SmartInventory Pro v2.0.0 - Major Release**
+          
+          ## 🎯 What's New
+          - **Completely rebuilt installer** - No more installation errors!
+          - **Smart update system** - Updates work seamlessly
+          - **Enhanced stability** - All previous bugs fixed
+          - **Better user experience** - Simplified installation process
+          
+          ## 📦 Installation
+          1. Download `SmartInventoryPro_v2.0.0_Release.zip`
+          2. Extract all files to a folder
+          3. Right-click `SmartInventoryPro_Simple_Installer.bat`
+          4. Select **"Run as administrator"**
+          5. Follow the installation wizard
+          
+          ## ✨ Features
+          - Modern Arabic interface
+          - Advanced inventory management
+          - Real-time statistics
+          - Automatic updates
+          - Database integration
+          
+          ## 🔧 System Requirements
+          - Windows 10/11 (64-bit)
+          - Administrator privileges
+          - 100MB free space
+          
+          ## 📋 Fixed Issues
+          - ✅ Installer now works on all systems
+          - ✅ Shortcuts point to correct location
+          - ✅ Update mechanism completely rebuilt
+          - ✅ No more file corruption issues
+          - ✅ Simplified installation process
+          
+          **Download the ZIP file below and follow the installation instructions!**
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./SmartInventoryPro_v2.0.0_Release.zip
+        asset_name: SmartInventoryPro_v2.0.0_Release.zip
+        asset_content_type: application/zip

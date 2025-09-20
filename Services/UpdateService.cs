@@ -14,6 +14,7 @@ namespace SmartInventoryPro.Services
         private readonly HttpClient _httpClient;
         private const string API_BASE_URL = "http://102.213.180.199:8080/infinitypos-api/";
         private const string GITHUB_REPO = "https://api.github.com/repos/Hadani0mar/InfinityPOS";
+        private const string RELEASE_API_URL = "https://api.github.com/repos/Hadani0mar/InfinityPOS/releases/latest";
         private const string DOWNLOAD_URL = "https://github.com/Hadani0mar/InfinityPOS/releases/latest/download/";
 
         public UpdateService()
@@ -73,7 +74,8 @@ namespace SmartInventoryPro.Services
         {
             try
             {
-                var response = await _httpClient.GetStringAsync($"{GITHUB_REPO}/releases/latest");
+                // استخدام URL مباشر للأمان
+                var response = await _httpClient.GetStringAsync(RELEASE_API_URL);
                 var release = JsonConvert.DeserializeObject<GitHubRelease>(response);
                 
                 if (release == null || string.IsNullOrEmpty(release.TagName))

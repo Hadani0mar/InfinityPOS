@@ -13,9 +13,9 @@
     <AssemblyCompany>SmartInventory Pro Team</AssemblyCompany>
     <AssemblyProduct>SmartInventory Pro</AssemblyProduct>
     <AssemblyCopyright>© 2025 SmartInventory Pro Team</AssemblyCopyright>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
-    <FileVersion>1.6.0.0</FileVersion>
-    <InformationalVersion>1.6.0</InformationalVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <InformationalVersion>2.0.0</InformationalVersion>
     <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
   </PropertyGroup>
 

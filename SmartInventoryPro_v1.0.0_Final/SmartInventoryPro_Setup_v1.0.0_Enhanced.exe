@@ -1,0 +1,134 @@
+@echo off
+chcp 65001 >nul
+title SmartInventory Pro Installer v1.0.0 - Enhanced
+echo.
+echo ========================================
+echo    SmartInventory Pro Installer v1.0.0
+echo ========================================
+echo.
+echo Welcome to SmartInventory Pro
+echo.
+echo This installer will install SmartInventory Pro on your computer.
+echo SmartInventory Pro is an advanced business management system.
+echo.
+
+REM Check if running as administrator
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo [ERROR] This installer requires administrator privileges.
+    echo Please right-click and select "Run as administrator"
+    echo.
+    pause
+    exit /b 1
+)
+
+set "APP_NAME=SmartInventory Pro"
+set "APP_DIR=%PROGRAMFILES%\%APP_NAME%"
+set "APP_DIR_X86=%PROGRAMFILES(X86)%\%APP_NAME%"
+set "START_MENU=%APPDATA%\Microsoft\Windows\Start Menu\Programs"
+set "DESKTOP=%USERPROFILE%\Desktop"
+
+echo [INFO] Installing %APP_NAME%...
+echo.
+
+REM Clean up any existing installations
+echo [INFO] Cleaning up existing installations...
+if exist "%APP_DIR%" (
+    echo [INFO] Found existing installation in Program Files
+    taskkill /f /im SmartInventoryPro.exe 2>nul
+    timeout /t 3 /nobreak >nul
+    rmdir /s /q "%APP_DIR%" 2>nul
+    echo [INFO] Removed existing installation
+)
+
+if exist "%APP_DIR_X86%" (
+    echo [INFO] Found existing installation in Program Files (x86)
+    taskkill /f /im SmartInventoryPro.exe 2>nul
+    timeout /t 3 /nobreak >nul
+    rmdir /s /q "%APP_DIR_X86%" 2>nul
+    echo [INFO] Removed existing installation
+)
+
+REM Remove old shortcuts
+if exist "%START_MENU%\%APP_NAME%" (
+    rmdir /s /q "%START_MENU%\%APP_NAME%" 2>nul
+    echo [INFO] Removed old Start Menu shortcuts
+)
+
+if exist "%DESKTOP%\%APP_NAME%.lnk" (
+    del "%DESKTOP%\%APP_NAME%.lnk" 2>nul
+    echo [INFO] Removed old Desktop shortcut
+)
+
+REM Create installation directory
+echo [INFO] Creating installation directory...
+mkdir "%APP_DIR%" 2>nul
+if not exist "%APP_DIR%" (
+    echo [ERROR] Failed to create installation directory
+    echo Please check your permissions and try again
+    pause
+    exit /b 1
+)
+
+REM Copy application files
+echo [INFO] Copying application files...
+if not exist "SmartInventoryPro.exe" (
+    echo [ERROR] SmartInventoryPro.exe not found in current directory
+    echo Please make sure all files are in the same folder as this installer
+    pause
+    exit /b 1
+)
+
+copy "SmartInventoryPro.exe" "%APP_DIR%\" >nul
+if %errorLevel% neq 0 (
+    echo [ERROR] Failed to copy SmartInventoryPro.exe
+    pause
+    exit /b 1
+)
+
+if exist "appsettings.json" (
+    copy "appsettings.json" "%APP_DIR%\" >nul
+    echo [INFO] Copied configuration file
+) else (
+    echo [WARNING] appsettings.json not found, using default settings
+)
+
+echo [SUCCESS] Application files copied successfully
+
+REM Create shortcuts
+echo [INFO] Creating shortcuts...
+
+REM Create Start Menu folder
+mkdir "%START_MENU%\%APP_NAME%" 2>nul
+
+REM Create Start Menu shortcut using PowerShell
+powershell -Command "& {$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%START_MENU%\%APP_NAME%\%APP_NAME%.lnk'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Business Management System'; $Shortcut.Save()}" 2>nul
+
+REM Create Desktop shortcut using PowerShell
+powershell -Command "& {$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%DESKTOP%\%APP_NAME%.lnk'); $Shortcut.TargetPath = '%APP_DIR%\SmartInventoryPro.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%'; $Shortcut.Description = 'SmartInventory Pro - Business Management System'; $Shortcut.Save()}" 2>nul
+
+echo [SUCCESS] Shortcuts created successfully
+
+REM Set file permissions
+echo [INFO] Setting file permissions...
+icacls "%APP_DIR%" /grant Everyone:F /T >nul 2>&1
+
+echo.
+echo ========================================
+echo    Installation completed successfully!
+echo ========================================
+echo.
+echo %APP_NAME% has been installed to: %APP_DIR%
+echo.
+echo Shortcuts created:
+echo - Start Menu: %START_MENU%\%APP_NAME%
+echo - Desktop: %DESKTOP%\%APP_NAME%.lnk
+echo.
+echo You can now run SmartInventory Pro from:
+echo 1. Start Menu
+echo 2. Desktop shortcut
+echo 3. Directly from: %APP_DIR%\SmartInventoryPro.exe
+echo.
+echo Press any key to exit...
+pause >nul
+

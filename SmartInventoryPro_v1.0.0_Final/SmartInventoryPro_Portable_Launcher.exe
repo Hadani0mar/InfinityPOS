@@ -1,0 +1,66 @@
+@echo off
+chcp 65001 >nul
+title SmartInventory Pro - Portable Launcher
+echo.
+echo ========================================
+echo    SmartInventory Pro - Portable Mode
+echo ========================================
+echo.
+echo Starting SmartInventory Pro in portable mode...
+echo.
+
+REM Check if SmartInventoryPro.exe exists
+if not exist "SmartInventoryPro.exe" (
+    echo [ERROR] SmartInventoryPro.exe not found!
+    echo Please make sure SmartInventoryPro.exe is in the same folder as this launcher.
+    echo.
+    pause
+    exit /b 1
+)
+
+REM Check if appsettings.json exists, create default if not
+if not exist "appsettings.json" (
+    echo [INFO] Creating default configuration file...
+    echo {> appsettings.json
+    echo   "ConnectionStrings": {>> appsettings.json
+    echo     "DefaultConnection": "Server=localhost;Database=InfinityPOS;Trusted_Connection=true;Encrypt=false;ConnectRetryCount=3;ConnectRetryInterval=10">> appsettings.json
+    echo   },>> appsettings.json
+    echo   "Logging": {>> appsettings.json
+    echo     "LogLevel": {>> appsettings.json
+    echo       "Default": "Information",>> appsettings.json
+    echo       "Microsoft.Data.SqlClient": "Warning">> appsettings.json
+    echo     }>> appsettings.json
+    echo   },>> appsettings.json
+    echo   "Application": {>> appsettings.json
+    echo     "Version": "1.0.0",>> appsettings.json
+    echo     "Name": "SmartInventory Pro">> appsettings.json
+    echo   }>> appsettings.json
+    echo }>> appsettings.json
+    echo [SUCCESS] Default configuration created
+)
+
+echo [INFO] Launching SmartInventory Pro...
+echo.
+
+REM Start the application
+start "" "SmartInventoryPro.exe"
+
+REM Wait a moment and check if it started successfully
+timeout /t 2 /nobreak >nul
+
+REM Check if the process is running
+tasklist /FI "IMAGENAME eq SmartInventoryPro.exe" 2>NUL | find /I /N "SmartInventoryPro.exe">NUL
+if "%ERRORLEVEL%"=="0" (
+    echo [SUCCESS] SmartInventory Pro started successfully!
+    echo.
+    echo The application is now running in portable mode.
+    echo You can close this window.
+) else (
+    echo [WARNING] SmartInventory Pro may not have started properly.
+    echo Please check if all required files are present.
+)
+
+echo.
+echo Press any key to close this launcher...
+pause >nul
+

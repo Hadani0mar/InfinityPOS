@@ -4,8 +4,8 @@
 param(
     [string]$Token = "",
     [string]$Repo = "Hadani0mar/InfinityPOS",
-    [string]$Tag = "v1.6.0",
-    [string]$Name = "SmartInventory Pro v1.6.0",
+    [string]$Tag = "v1.0.0",
+    [string]$Name = "SmartInventory Pro v1.0.0 - First Official Release",
     [string]$Body = ""
 )
 
@@ -17,27 +17,38 @@ if ([string]::IsNullOrEmpty($Token)) {
 
 if ([string]::IsNullOrEmpty($Body)) {
     $Body = @"
-## 🎉 SmartInventory Pro v1.6.0
+## 🎉 SmartInventory Pro v1.0.0 - First Official Release
 
-### ✨ الميزات الجديدة:
-- **أيقونة لهب** 🔥 فوق "أفضل منتج" و "أفضل فئة"
-- **مثبت حقيقي** مع واجهة سهلة
-- **يتعامل مع التحديثات** بشكل ذكي
-- **يحافظ على إعدادات المستخدم**
+### ✨ New Features:
+- 🔥 **Fire icons** added to Top Product and Top Category cards
+- 🚀 **Automatic update system** with GitHub integration
+- 💾 **Database connection persistence** - saves login settings
+- 🛠️ **Professional installer** with version management
+- 📱 **Portable version** available for direct execution
 
-### 📦 كيفية التثبيت:
-1. نزل `SmartInventoryPro_v1.6.0_Complete.zip`
-2. استخرج الملفات
-3. اضغط على `SmartInventoryPro_Setup_v1.6.0.exe`
-4. اتبع التعليمات
+### 📦 What's Included:
+- `SmartInventoryPro.exe` - Main application (portable)
+- `SmartInventoryPro_Setup_v1.0.0.exe` - Professional installer
+- `appsettings.json` - Configuration file
+- `README.txt` - Installation guide
 
-### 🔧 متطلبات النظام:
-- Windows 10 أو أحدث
-- .NET 8.0 Runtime (مضمن)
-- SQL Server
+### 🚀 Installation Options:
+1. **Installer**: Run `SmartInventoryPro_Setup_v1.0.0.exe` for full installation
+2. **Portable**: Run `SmartInventoryPro.exe` directly (no installation needed)
+
+### 🔧 Technical Improvements:
+- Fixed 'Index and length' error completely
+- Enhanced error handling and logging
+- Improved update mechanism
+- Better database connection management
+
+### 📋 System Requirements:
+- Windows 10/11 (64-bit)
+- .NET 8.0 Runtime (included in installer)
+- SQL Server connection
 
 ---
-**© 2025 SmartInventory Pro Team**
+**Download and enjoy the first official release of SmartInventory Pro!** 🎊
 "@
 }
 
@@ -68,16 +79,16 @@ try {
     $uploadUrl = $response.upload_url -replace "\{.*\}", ""
     
     # Upload main zip file
-    if (Test-Path "SmartInventoryPro_v1.6.0_Complete.zip") {
+    if (Test-Path "SmartInventoryPro_v1.0.0_Release.zip") {
         Write-Host "📤 رفع ملف ZIP..." -ForegroundColor Blue
-        $fileBytes = [System.IO.File]::ReadAllBytes("SmartInventoryPro_v1.6.0_Complete.zip")
+        $fileBytes = [System.IO.File]::ReadAllBytes("SmartInventoryPro_v1.0.0_Release.zip")
         $fileEnc = [System.Text.Encoding]::GetEncoding('UTF-8').GetString($fileBytes)
         $boundary = [System.Guid]::NewGuid().ToString()
         $LF = "`r`n"
         
         $bodyLines = (
             "--$boundary",
-            "Content-Disposition: form-data; name=`"file`"; filename=`"SmartInventoryPro_v1.6.0_Complete.zip`"",
+            "Content-Disposition: form-data; name=`"file`"; filename=`"SmartInventoryPro_v1.0.0_Release.zip`"",
             "Content-Type: application/zip$LF",
             $fileEnc,
             "--$boundary--$LF"
@@ -88,7 +99,7 @@ try {
             "Content-Type" = "multipart/form-data; boundary=$boundary"
         }
         
-        $uploadResponse = Invoke-RestMethod -Uri "$uploadUrl?name=SmartInventoryPro_v1.6.0_Complete.zip" -Method Post -Headers $uploadHeaders -Body $bodyLines
+        $uploadResponse = Invoke-RestMethod -Uri "$uploadUrl?name=SmartInventoryPro_v1.0.0_Release.zip" -Method Post -Headers $uploadHeaders -Body $bodyLines
         
         Write-Host "✅ تم رفع ملف ZIP بنجاح!" -ForegroundColor Green
     }
