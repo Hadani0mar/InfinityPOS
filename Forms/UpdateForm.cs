@@ -26,12 +26,13 @@ namespace SmartInventoryPro.Forms
         private void InitializeComponent()
         {
             this.Text = "نظام التحديثات - InfinityPOS";
-            this.Size = new Size(450, 350);
+            this.Size = new Size(500, 400);
             this.StartPosition = FormStartPosition.CenterParent;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
             this.TopMost = true;
+            this.MinimumSize = new Size(450, 350);
 
             // Header Panel
             var headerPanel = new Panel
@@ -75,17 +76,20 @@ namespace SmartInventoryPro.Forms
             {
                 Dock = DockStyle.Fill,
                 Visible = false,
-                Padding = new Padding(10),
-                AutoScroll = true
+                Padding = new Padding(15),
+                AutoScroll = true,
+                BackColor = Color.FromArgb(248, 249, 250),
+                BorderStyle = BorderStyle.FixedSingle
             };
 
             lblUpdateInfo = new Label
             {
-                Font = new Font("Segoe UI", 8),
+                Font = new Font("Segoe UI", 9),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 AutoSize = true,
-                MaximumSize = new Size(380, 180),
-                TextAlign = ContentAlignment.TopLeft
+                MaximumSize = new Size(450, 0), // إزالة الحد الأقصى للارتفاع
+                TextAlign = ContentAlignment.TopLeft,
+                Padding = new Padding(10)
             };
 
             pnlUpdateInfo.Controls.Add(lblUpdateInfo);
@@ -94,43 +98,47 @@ namespace SmartInventoryPro.Forms
             var buttonsPanel = new Panel
             {
                 Dock = DockStyle.Bottom,
-                Height = 60
+                Height = 70,
+                Padding = new Padding(10)
             };
 
             btnCheckUpdates = new Guna2Button
             {
                 Text = "🔍 فحص التحديثات",
-                Size = new Size(150, 40),
-                Location = new Point(20, 10),
+                Size = new Size(160, 45),
+                Location = new Point(15, 12),
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.White,
                 FillColor = Color.FromArgb(46, 204, 113),
-                BorderRadius = 8
+                BorderRadius = 8,
+                Anchor = AnchorStyles.Left | AnchorStyles.Bottom
             };
             btnCheckUpdates.Click += BtnCheckUpdates_Click;
 
             btnApplyUpdate = new Guna2Button
             {
                 Text = "⬇️ تحميل التحديث",
-                Size = new Size(150, 40),
-                Location = new Point(190, 10),
+                Size = new Size(160, 45),
+                Location = new Point(185, 12),
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.White,
                 FillColor = Color.FromArgb(52, 152, 219),
                 BorderRadius = 8,
-                Enabled = false
+                Enabled = false,
+                Anchor = AnchorStyles.Left | AnchorStyles.Bottom
             };
             btnApplyUpdate.Click += BtnApplyUpdate_Click;
 
             btnClose = new Guna2Button
             {
                 Text = "❌ إغلاق",
-                Size = new Size(100, 40),
-                Location = new Point(360, 10),
+                Size = new Size(110, 45),
+                Location = new Point(355, 12),
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.White,
                 FillColor = Color.FromArgb(231, 76, 60),
-                BorderRadius = 8
+                BorderRadius = 8,
+                Anchor = AnchorStyles.Right | AnchorStyles.Bottom
             };
             btnClose.Click += (s, e) => this.Close();
 
@@ -167,12 +175,8 @@ namespace SmartInventoryPro.Forms
                         hashDisplay = updateInfo.LastHash.Substring(0, 8);
                     }
                     
-                    // تقصير النص وإضافة النقاط في حالة الطول الزائد
-                    var message = updateInfo.LastMessage.Length > 100 ? 
-                        updateInfo.LastMessage.Substring(0, 100) + "..." : 
-                        updateInfo.LastMessage;
-                        
-                    lblUpdateInfo.Text = $"📝 محتوى التحديث:\n{message}\n\n" +
+                    // عرض النص كاملاً مع إمكانية التمرير
+                    lblUpdateInfo.Text = $"📝 محتوى التحديث:\n{updateInfo.LastMessage}\n\n" +
                                        $"🕒 تاريخ النشر: {updateInfo.LastDate}\n" +
                                        $"🔗 معرف التحديث: {hashDisplay}...";
                     
@@ -221,12 +225,8 @@ namespace SmartInventoryPro.Forms
                         newCommitDisplay = result.NewCommit.Substring(0, 8);
                     }
                     
-                    // تقصير النص 
-                    var newMessage = result.NewMessage.Length > 100 ? 
-                        result.NewMessage.Substring(0, 100) + "..." : 
-                        result.NewMessage;
-                        
-                    lblUpdateInfo.Text = $"📝 التحديث الجديد: {newMessage}\n" +
+                    // عرض النص كاملاً مع إمكانية التمرير
+                    lblUpdateInfo.Text = $"📝 التحديث الجديد: {result.NewMessage}\n" +
                                        $"🕒 تاريخ التحديث: {result.NewDate}\n" +
                                        $"🔗 معرف التحديث: {newCommitDisplay}...";
                     
